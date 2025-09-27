@@ -244,7 +244,7 @@ const CadastrialMap = () => {
                 <div class="stat-card plots">
                     <div class="stat-icon">🗺️</div>
                     <div class="stat-content">
-                        <h4>Land Parcels</h4>
+                        <h5>Land Parcels</h5>
                         <div class="stat-number">${totalPlots}</div>
                         <p class="stat-label">Total Plots</p>
                     </div>
@@ -253,7 +253,7 @@ const CadastrialMap = () => {
                 <div class="stat-card holders">
                     <div class="stat-icon">👥</div>
                     <div class="stat-content">
-                        <h4>Patta Holders</h4>
+                        <h5>Patta Holders</h5>
                         <div class="stat-number">${totalPattaHolders}</div>
                         <p class="stat-label">Active Holders</p>
                     </div>
@@ -617,7 +617,7 @@ const CadastrialMap = () => {
                     position: "absolute",
                     top: 10,
                     right: 10,
-                    width: "460px",
+                    width: "340px",
                     height: "calc(100% - 20px)",
                     background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
                     boxShadow: "-4px 0 20px rgba(0,0,0,0.15)",
@@ -874,7 +874,7 @@ const CadastrialMap = () => {
                 .stat-card {
                     background: white;
                     border-radius: 12px;
-                    padding: 20px;
+                    padding: 5px;
                     display: flex;
                     align-items: center;
                     gap: 16px;
