@@ -11,7 +11,7 @@ import TopoGraphicalMap from './Maps/TopoGraphicalMap.jsx';
 const mapOptions = [
   { id: 'cadastrial', label: 'Cadastrial Map', icon: <MapIcon />, component: <CadastrialMap /> },
   { id: 'asset', label: 'Asset Map', icon: <Analytics />, component: <AssestMap /> },
-  { id: 'topographical', label: 'Topographical Map', icon: <Terrain />, component: <TopoGraphicalMap /> },
+  { id: 'topographical', label: 'Fra Atlas', icon: <Terrain />, component: <TopoGraphicalMap /> },
 ];
 
 // Styled components for a custom, clean look
