@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { Box, Toolbar, Container, Paper } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -31,6 +31,9 @@ const theme = createTheme({
 const drawerWidth = 280;
 
 const Layout = () => {
+  const location = useLocation();
+  const isMapPage = location.pathname === '/atlas';
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -45,21 +48,31 @@ const Layout = () => {
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             backgroundColor: "background.default",
             minHeight: "100vh",
+            ...(isMapPage && {
+              height: "100vh",
+              overflow: "hidden"
+            })
           }}
         >
           {/* Toolbar spacer for mobile */}
           <Toolbar sx={{ display: { sm: "none" } }} />
 
-          {/* Page Content */}
-          <Container
-            maxWidth="xl"
-            sx={{
-              py: 3,
-              px: { xs: 2, sm: 3 },
-            }}
-          >
-            <Outlet />
-          </Container>
+          {/* Page Content - Full height for maps, container for other pages */}
+          {isMapPage ? (
+            <Box sx={{ height: { xs: "calc(100vh - 56px)", sm: "100vh" } }}>
+              <Outlet />
+            </Box>
+          ) : (
+            <Container
+              maxWidth="xl"
+              sx={{
+                py: 3,
+                px: { xs: 2, sm: 3 },
+              }}
+            >
+              <Outlet />
+            </Container>
+          )}
         </Box>
       </Box>
     </ThemeProvider>

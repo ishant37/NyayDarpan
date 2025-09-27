@@ -1,96 +1,97 @@
-import React, { useState, useEffect, useRef } from 'react';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { DecisionSupportPanel } from './DecisionSupportPanel';
+import React, { useState } from 'react';
+import { Box, ToggleButtonGroup, ToggleButton, useTheme, styled, Tooltip, Typography } from '@mui/material';
+import { Map as MapIcon, Analytics, Terrain } from '@mui/icons-material';
 
-// --- Mock Data Generation Utility ---
-const holderNames = ["Ramesh Kumar", "Sita Devi", "Arjun Singh", "Priya Sharma", "Vikram Rathore"];
-const claimTypes = ["Individual", "Community", "Habitat"];
-const statuses = ["Approved", "Pending", "Rejected"];
+// Import the different map components with their file extensions
+import CadastrialMap from './Maps/CadastrialMap.jsx';
+import AssestMap from './Maps/AssestMap.jsx';
+import TopoGraphicalMap from './Maps/TopoGraphicalMap.jsx';
 
-const generateRandomPolygonData = (id, districtName) => ({
-  id: `${districtName.slice(0, 3).toUpperCase()}-${id}`,
-  holderName: holderNames[Math.floor(Math.random() * holderNames.length)],
-  area: (Math.random() * 10 + 1).toFixed(2),
-  type: claimTypes[Math.floor(Math.random() * claimTypes.length)],
-  status: statuses[Math.floor(Math.random() * statuses.length)],
-});
-// --- End of Utility ---
+// Configuration for map types to keep the code clean and scalable
+const mapOptions = [
+  { id: 'cadastrial', label: 'Cadastrial Map', icon: <MapIcon />, component: <CadastrialMap /> },
+  { id: 'asset', label: 'Asset Map', icon: <Analytics />, component: <AssestMap /> },
+  { id: 'topographical', label: 'Topographical Map', icon: <Terrain />, component: <TopoGraphicalMap /> },
+];
+
+// Styled components for a custom, clean look
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backdropFilter: 'blur(8px)',
+  borderRadius: '30px',
+  boxShadow: theme.shadows[4],
+  border: `1px solid ${theme.palette.divider}`,
+}));
+
+const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
+  borderRadius: '30px !important',
+  border: 'none !important',
+  padding: '10px 20px',
+  textTransform: 'none',
+  fontWeight: 600,
+  color: theme.palette.text.secondary,
+  transition: 'all 0.3s ease',
+  '&.Mui-selected': {
+    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.primary.main,
+    boxShadow: `0 4px 15px ${theme.palette.primary.main}50`,
+  },
+  '&.Mui-selected:hover': {
+    backgroundColor: theme.palette.primary.dark,
+  },
+}));
 
 const Map = () => {
-  const mapRef = useRef(null);
-  const [selectedPolygon, setSelectedPolygon] = useState(null);
+  const [activeMap, setActiveMap] = useState('cadastrial');
 
-  // This function is triggered when a district on the map is clicked
-  const handleFeatureClick = (feature) => {
-    const districtName = feature.properties.D_N || "Unknown";
-    const randomId = Math.floor(1000 + Math.random() * 9000);
-    const randomData = generateRandomPolygonData(randomId, districtName);
-    setSelectedPolygon(randomData);
-  };
-
-  // This function is passed to the panel to allow it to close itself
-  const handleClosePanel = () => {
-    setSelectedPolygon(null);
-  };
-
-  // useEffect hook to initialize the map and layers
-  useEffect(() => {
-    // Prevent map from being initialized multiple times
-    if (mapRef.current && !mapRef.current._leaflet_id) {
-      const map = L.map(mapRef.current).setView([17.0, 78.5], 7);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
-
-      // Fetch district boundaries GeoJSON
-      fetch("https://raw.githubusercontent.com/gggodhwani/telangana_boundaries/refs/heads/master/districts.json")
-        .then(response => response.json())
-        .then(geojson => {
-          const geoJsonLayer = L.geoJSON(geojson, {
-            style: {
-              color: "#3388ff",
-              weight: 2,
-              opacity: 0.8,
-              fillColor: "#3388ff",
-              fillOpacity: 0.2,
-            },
-            onEachFeature: (feature, layer) => {
-              // Add a click event listener to each district layer
-              layer.on('click', () => {
-                handleFeatureClick(feature);
-              });
-            }
-          }).addTo(map);
-
-          map.fitBounds(geoJsonLayer.getBounds());
-        })
-        .catch(err => console.error("Failed to load GeoJSON:", err));
-
-      // Cleanup function to remove the map instance when the component unmounts
-      return () => {
-        map.remove();
-      };
+  const handleMapChange = (event, newMap) => {
+    // Prevent deselecting a button
+    if (newMap !== null) {
+      setActiveMap(newMap);
     }
-  }, []); // Empty dependency array ensures this runs only once on mount
+  };
+  
+  // Find the component to render based on the active state
+  const ActiveMapComponent = mapOptions.find(map => map.id === activeMap)?.component;
 
   return (
-    <div className="relative h-[calc(100vh-64px)] w-full">
-      {/* The div where the Leaflet map will be rendered */}
-      <div ref={mapRef} className="w-full h-full" />
+    <Box sx={{ position: 'relative', height: '100%', width: '100%' }}>
+      {/* Map Switcher Control at the top-center */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000, // Ensure it's above the map layers
+        }}
+      >
+        <StyledToggleButtonGroup
+          value={activeMap}
+          exclusive
+          onChange={handleMapChange}
+          aria-label="map type"
+        >
+          {mapOptions.map((option) => (
+            <Tooltip title={option.label} key={option.id} arrow>
+              <StyledToggleButton value={option.id} aria-label={option.label}>
+                {option.icon}
+                <Typography variant="body2" sx={{ ml: 1, display: { xs: 'none', sm: 'block' } }}>
+                  {option.label}
+                </Typography>
+              </StyledToggleButton>
+            </Tooltip>
+          ))}
+        </StyledToggleButtonGroup>
+      </Box>
 
-      {/* The Decision Support Panel */}
-      <div className={`absolute top-0 right-0 h-full w-[400px] shadow-lg z-[1000] transition-transform duration-300 ease-in-out ${
-        selectedPolygon ? 'translate-x-0' : 'translate-x-full'
-      }`}>
-        <DecisionSupportPanel
-          polygonData={selectedPolygon}
-          onClose={handleClosePanel}
-        />
-      </div>
-    </div>
+      {/* Render the active map component, which will fill the container */}
+      <Box sx={{ height: '100%', width: '100%' }}>
+        {ActiveMapComponent}
+      </Box>
+    </Box>
   );
 };
 
 export default Map;
+

@@ -168,15 +168,47 @@ const CadastrialMap = () => {
         }
 
         sidebarContent.innerHTML = `
-            <div class="info-entry"><p><b>--- Plot Details ---</b></p></div>
-            <div class="info-entry"><p><b>Plot ID:</b> ${plotData.plot_id}</p></div>
-            <div class="info-entry"><p><b>Village:</b> ${plotData.village_nam}</p></div>
-            <div class="info-entry"><p><b>Tenant Name:</b> ${plotData.tenant_name}</p></div>
-            <div class="info-entry"><p><b>Khasra No:</b> ${plotData.kha_no}</p></div>
-            <div class="info-entry"><p><b>Land Area:</b> ${plotData.Land_Area}</p></div>
-            <div class="info-entry"><p><b>Land Type:</b> ${plotData.Land_type}</p></div>
-            <div class="info-entry"><p><b>Rent/Cess:</b> ${plotData.Rent_Cess}</p></div>
-            <div class="info-entry"><p><b>Last Update:</b> ${plotData.Last_Published_Date}</p></div>
+            <div class="plot-header">
+                <h3 class="plot-title">📋 Plot Details</h3>
+                <div class="plot-id-badge">${plotData.plot_id}</div>
+            </div>
+            
+            <div class="plot-info-grid">
+                <div class="plot-info-card">
+                    <div class="plot-info-icon">🏘️</div>
+                    <div class="plot-info-content">
+                        <h4>Location</h4>
+                        <p><strong>Village:</strong> ${plotData.village_nam}</p>
+                        <p><strong>Khasra No:</strong> ${plotData.kha_no}</p>
+                    </div>
+                </div>
+                
+                <div class="plot-info-card">
+                    <div class="plot-info-icon">👤</div>
+                    <div class="plot-info-content">
+                        <h4>Ownership</h4>
+                        <p><strong>Tenant:</strong> ${plotData.tenant_name}</p>
+                        <p><strong>Type:</strong> ${plotData.Land_type}</p>
+                    </div>
+                </div>
+                
+                <div class="plot-info-card">
+                    <div class="plot-info-icon">📏</div>
+                    <div class="plot-info-content">
+                        <h4>Land Details</h4>
+                        <p><strong>Area:</strong> ${plotData.Land_Area}</p>
+                        <p><strong>Rent/Cess:</strong> ${plotData.Rent_Cess}</p>
+                    </div>
+                </div>
+                
+                <div class="plot-info-card">
+                    <div class="plot-info-icon">📅</div>
+                    <div class="plot-info-content">
+                        <h4>Last Updated</h4>
+                        <p>${plotData.Last_Published_Date}</p>
+                    </div>
+                </div>
+            </div>
         `;
 
         sidebar.classList.add("visible");
@@ -193,29 +225,96 @@ const CadastrialMap = () => {
         sidebarContent.innerHTML = "";
 
         const isDistrictSelected = !!selectedDistrict;
-        const titleText = isDistrictSelected ? 'District Details' : 'State Summary';
-
-        const districtNameField = isDistrictSelected
-            ? `<div class="info-entry"><p><b>District Name:</b> ${selectedDistrict.name}</p></div>`
-            : '';
-
+        const primaryName = isDistrictSelected ? selectedDistrict.name : selectedState;
+        
         const {
             totalPlots, totalIFRFiled, totalIFRGranted,
             totalCFRFiled, totalCFRGranted, totalPattaHolders
         } = data;
-
-        const primaryName = isDistrictSelected ? selectedDistrict.name : selectedState;
+        
+        const titleText = isDistrictSelected ? `District Analysis: ${primaryName}` : `State Overview: ${primaryName}`;
 
         sidebarContent.innerHTML = `
-            <div class="info-entry"><p><b>${titleText}:</b> ${primaryName}</p></div>
-            ${districtNameField}
-            <div class="info-entry"><p><b>Total Plots:</b> ${totalPlots}</p></div>
-            <div class="info-entry"><p><b>Total IFR Claims Filed:</b> ${totalIFRFiled}</p></div>
-            <div class="info-entry"><p><b>Total IFR Claims Granted:</b> ${totalIFRGranted}</p></div>
-            <div class="info-entry"><p><b>Total CFR Claims Filed:</b> ${totalCFRFiled}</p></div>
-            <div class="info-entry"><p><b>Total CFR Claims Granted:</b> ${totalCFRGranted}</p></div>
-            <div class="info-entry"><p><b>Total Patta Holders:</b> ${totalPattaHolders}</p></div>
-            <canvas id="fraChart"></canvas>
+            <div class="data-header">
+                <h3 class="data-title">${titleText}</h3>
+                ${!isDistrictSelected ? '<p class="data-subtitle">State-level cadastrial summary</p>' : ''}
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card plots">
+                    <div class="stat-icon">🗺️</div>
+                    <div class="stat-content">
+                        <h4>Land Parcels</h4>
+                        <div class="stat-number">${totalPlots}</div>
+                        <p class="stat-label">Total Plots</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card holders">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <h4>Patta Holders</h4>
+                        <div class="stat-number">${totalPattaHolders}</div>
+                        <p class="stat-label">Active Holders</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="claims-section">
+                <h4 class="section-title">📊 FRA Claims Analysis</h4>
+                <div class="claims-grid">
+                    <div class="claim-card ifr">
+                        <div class="claim-header">
+                            <span class="claim-icon">🌳</span>
+                            <span class="claim-type">Individual Rights</span>
+                        </div>
+                        <div class="claim-stats">
+                            <div class="claim-stat">
+                                <span class="claim-number">${totalIFRFiled}</span>
+                                <span class="claim-label">Filed</span>
+                            </div>
+                            <div class="claim-stat granted">
+                                <span class="claim-number">${totalIFRGranted}</span>
+                                <span class="claim-label">Granted</span>
+                            </div>
+                        </div>
+                        <div class="claim-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(totalIFRGranted/totalIFRFiled*100).toFixed(1)}%"></div>
+                            </div>
+                            <span class="progress-text">${(totalIFRGranted/totalIFRFiled*100).toFixed(1)}% Success Rate</span>
+                        </div>
+                    </div>
+                    
+                    <div class="claim-card cfr">
+                        <div class="claim-header">
+                            <span class="claim-icon">🏘️</span>
+                            <span class="claim-type">Community Rights</span>
+                        </div>
+                        <div class="claim-stats">
+                            <div class="claim-stat">
+                                <span class="claim-number">${totalCFRFiled}</span>
+                                <span class="claim-label">Filed</span>
+                            </div>
+                            <div class="claim-stat granted">
+                                <span class="claim-number">${totalCFRGranted}</span>
+                                <span class="claim-label">Granted</span>
+                            </div>
+                        </div>
+                        <div class="claim-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(totalCFRGranted/totalCFRFiled*100).toFixed(1)}%"></div>
+                            </div>
+                            <span class="progress-text">${(totalCFRGranted/totalCFRFiled*100).toFixed(1)}% Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h4 class="chart-title">Claims Distribution</h4>
+                <canvas id="fraChart"></canvas>
+            </div>
         `;
 
         sidebar.classList.add("visible");
@@ -226,9 +325,9 @@ const CadastrialMap = () => {
 
         const ctx = document.getElementById("fraChart").getContext("2d");
         chartRef.current = new Chart(ctx, {
-            type: "pie",
+            type: "doughnut",
             data: {
-                labels: ["IFR Granted", "IFR Denied", "CFR Granted", "CFR Denied"],
+                labels: ["IFR Granted", "IFR Pending", "CFR Granted", "CFR Pending"],
                 datasets: [
                     {
                         data: [
@@ -237,27 +336,34 @@ const CadastrialMap = () => {
                             totalCFRGranted,
                             totalCFRFiled - totalCFRGranted,
                         ],
-                        backgroundColor: ["#4caf50", "#f44336", "#2196f3", "#ffeb3b"],
-                        borderColor: ["#388e3c", "#d32f2f", "#1976d2", "#fbc02d"],
-                        borderWidth: 1,
+                        backgroundColor: ["#28a745", "#ffc107", "#17a2b8", "#fd7e14"],
+                        borderColor: ["#1e7e34", "#e0a800", "#138496", "#dc6502"],
+                        borderWidth: 2,
                     },
                 ],
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: "top" },
+                    legend: { 
+                        position: "bottom",
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: (tooltipItem) => {
-                                let label = tooltipItem.label || "";
-                                if (label) label += ": ";
-                                label += tooltipItem.raw;
-                                return label;
+                                return `${tooltipItem.label}: ${tooltipItem.raw}`;
                             },
                         },
                     },
                 },
+                cutout: '60%',
             },
         });
     }, [selectedDistrict, selectedState]);
@@ -272,6 +378,11 @@ const CadastrialMap = () => {
         else {
             const districtStats = generateRandomStats(2);
             renderDataAndChart(selectedDistrict.name, districtStats);
+        }
+        
+        // Ensure sidebar is visible
+        if (sidebarRef.current) {
+            sidebarRef.current.classList.add("visible");
         }
     }, [selectedState, selectedDistrict, renderDataAndChart]);
 
@@ -496,95 +607,418 @@ const CadastrialMap = () => {
 
     // --- Rendered Component Structure ---
     return (
-        <div style={{ height: "100vh", width: "100%", position: "relative" }}>
+        <div style={{ height: "100%", width: "100%", position: "relative" }}>
             <div ref={mapRef} id="map" style={{ height: "100%", width: "100%" }} />
             <div
                 ref={sidebarRef}
                 id="sidebar"
+                className="visible"
                 style={{
                     position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: "300px",
-                    height: "100%",
-                    backgroundColor: "white",
-                    padding: "20px",
-                    boxShadow: "-2px 0 5px rgba(0,0,0,0.5)",
+                    top: 10,
+                    right: 10,
+                    width: "460px",
+                    height: "calc(100% - 20px)",
+                    background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
+                    boxShadow: "-4px 0 20px rgba(0,0,0,0.15)",
                     zIndex: 1000,
                     overflowY: "auto",
-                    transform: "translateX(100%)",
-                    transition: "transform 0.3s ease-in-out",
+                    transform: "translateX(0%)",
+                    transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    borderLeft: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: "12px 0 0 12px",
                 }}
             >
+                {/* Sticky Header */}
                 <div
-                    id="sidebar-header"
                     style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        borderBottom: "1px solid #ccc",
-                        paddingBottom: "10px",
-                        marginBottom: "10px"
+                        position: "sticky",
+                        top: 0,
+                        background: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        padding: "24px",
+                        borderBottom: "2px solid #e9ecef",
+                        zIndex: 10
                     }}
                 >
-                    <h3>
-                        {selectedDistrict
-                            ? `District Details`
-                            : `State Summary`}
-                    </h3>
-                    <span
-                        id="sidebar-close"
-                        style={{ cursor: "pointer", fontSize: "24px", fontWeight: "bold" }}
-                        onClick={() => sidebarRef.current.classList.remove("visible")}
-                    >
-                        &times;
-                    </span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                        <h3 style={{ 
+                            margin: 0, 
+                            color: "#2c3e50", 
+                            fontSize: "1.4rem", 
+                            fontWeight: 600,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px"
+                        }}>
+                            🗺️ {selectedDistrict ? `District Analysis` : `State Overview`}
+                        </h3>
+                        <span
+                            style={{ 
+                                cursor: "pointer", 
+                                fontSize: "28px", 
+                                fontWeight: "bold",
+                                color: "#6c757d",
+                                transition: "all 0.2s",
+                                padding: "5px",
+                                borderRadius: "50%",
+                                width: "40px",
+                                height: "40px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center"
+                            }}
+                            onClick={() => sidebarRef.current.classList.remove("visible")}
+                            onMouseOver={(e) => {
+                                e.target.style.color = "#dc3545";
+                                e.target.style.backgroundColor = "rgba(220, 53, 69, 0.1)";
+                            }}
+                            onMouseOut={(e) => {
+                                e.target.style.color = "#6c757d";
+                                e.target.style.backgroundColor = "transparent";
+                            }}
+                        >
+                            ×
+                        </span>
+                    </div>
+
+                    {/* Enhanced State Filter */}
+                    <div style={{ marginBottom: "20px" }}>
+                        <label style={{ 
+                            display: "block", 
+                            marginBottom: "8px", 
+                            fontWeight: 600, 
+                            color: "#495057",
+                            fontSize: "0.95rem"
+                        }}>
+                            🏛️ Select State:
+                        </label>
+                        <select
+                            value={selectedState}
+                            onChange={handleStateChange}
+                            style={{ 
+                                width: "100%", 
+                                padding: "12px 16px", 
+                                borderRadius: "10px",
+                                border: "2px solid #dee2e6",
+                                fontSize: "14px",
+                                backgroundColor: "white",
+                                transition: "all 0.2s",
+                                fontWeight: 500
+                            }}
+                        >
+                            {Object.keys(GEOJSON_URLS).map((stateName) => (
+                                <option key={stateName} value={stateName}>
+                                    {stateName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Enhanced District Filter */}
+                    <div>
+                        <label style={{ 
+                            display: "block", 
+                            marginBottom: "8px", 
+                            fontWeight: 600, 
+                            color: "#495057",
+                            fontSize: "0.95rem"
+                        }}>
+                            🏘️ Select District (Optional):
+                        </label>
+                        <select
+                            value={selectedDistrict ? selectedDistrict.name : ""}
+                            onChange={handleDistrictSelect}
+                            style={{ 
+                                width: "100%", 
+                                padding: "12px 16px", 
+                                borderRadius: "10px",
+                                border: "2px solid #dee2e6",
+                                fontSize: "14px",
+                                backgroundColor: districts.length === 0 ? "#f8f9fa" : "white",
+                                transition: "all 0.2s",
+                                fontWeight: 500,
+                                cursor: districts.length === 0 ? "not-allowed" : "pointer"
+                            }}
+                            disabled={districts.length === 0}
+                        >
+                            <option value="">-- View State Summary --</option>
+                            {districts.map((districtName) => (
+                                <option key={districtName} value={districtName}>
+                                    {districtName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
-                {/* State Filter Dropdown */}
-                <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-                    <label htmlFor="state-select">Select State:</label>
-                    <select
-                        id="state-select"
-                        value={selectedState}
-                        onChange={handleStateChange}
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-                    >
-                        {Object.keys(GEOJSON_URLS).map((stateName) => (
-                            <option key={stateName} value={stateName}>
-                                {stateName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* District Filter Dropdown */}
-                <div style={{ marginBottom: "20px" }}>
-                    <label htmlFor="district-select">Select District (Optional):</label>
-                    <select
-                        id="district-select"
-                        value={selectedDistrict ? selectedDistrict.name : ""}
-                        onChange={handleDistrictSelect}
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-                        disabled={districts.length === 0}
-                    >
-                        <option value="">-- View State Summary --</option>
-                        {districts.map((districtName) => (
-                            <option key={districtName} value={districtName}>
-                                {districtName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div ref={sidebarContentRef} id="sidebar-content">
-                    <p>Loading data...</p>
+                {/* Content Area */}
+                <div 
+                    ref={sidebarContentRef} 
+                    style={{ padding: "0 24px 24px 24px" }}
+                >
+                    <div style={{ 
+                        textAlign: "center", 
+                        color: "#6c757d", 
+                        fontSize: "14px",
+                        padding: "40px 20px",
+                        background: "white",
+                        borderRadius: "12px",
+                        border: "2px dashed #dee2e6"
+                    }}>
+                        <div style={{ fontSize: "2rem", marginBottom: "10px" }}>📊</div>
+                        Loading cadastrial data...
+                    </div>
                 </div>
             </div>
-            {/* Inline style for .visible class (required for sidebar animation) */}
+            {/* Enhanced CSS styles for modern UI */}
             <style>{`
                 #sidebar.visible {
                     transform: translateX(0%);
+                }
+                
+                /* Plot Details Styles */
+                .plot-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 24px;
+                }
+                
+                .plot-title {
+                    color: #2c3e50;
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                    margin: 0;
+                }
+                
+                .plot-id-badge {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    letter-spacing: 0.5px;
+                }
+                
+                .plot-info-grid {
+                    display: grid;
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+                
+                .plot-info-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 16px;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+                
+                .plot-info-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                }
+                
+                .plot-info-icon {
+                    font-size: 1.8rem;
+                    flex-shrink: 0;
+                }
+                
+                .plot-info-content h4 {
+                    color: #2c3e50;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    margin: 0 0 8px 0;
+                }
+                
+                .plot-info-content p {
+                    color: #495057;
+                    font-size: 0.85rem;
+                    margin: 0 0 4px 0;
+                    line-height: 1.4;
+                }
+                
+                /* Data Analysis Styles */
+                .data-header {
+                    margin-bottom: 24px;
+                }
+                
+                .data-title {
+                    color: #2c3e50;
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                    margin: 0 0 8px 0;
+                    line-height: 1.2;
+                }
+                
+                .data-subtitle {
+                    color: #6c757d;
+                    font-size: 0.9rem;
+                    margin: 0;
+                    font-style: italic;
+                }
+                
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+                
+                .stat-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+                
+                .stat-icon {
+                    font-size: 2.5rem;
+                    opacity: 0.8;
+                }
+                
+                .stat-content h4 {
+                    color: #495057;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    margin: 0 0 8px 0;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .stat-number {
+                    color: #2c3e50;
+                    font-size: 1.8rem;
+                    font-weight: 700;
+                    line-height: 1;
+                    margin-bottom: 4px;
+                }
+                
+                .stat-label {
+                    color: #6c757d;
+                    font-size: 0.8rem;
+                    margin: 0;
+                }
+                
+                .claims-section {
+                    margin-bottom: 24px;
+                }
+                
+                .section-title {
+                    color: #2c3e50;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin: 0 0 16px 0;
+                }
+                
+                .claims-grid {
+                    display: grid;
+                    gap: 16px;
+                }
+                
+                .claim-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+                
+                .claim-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 16px;
+                }
+                
+                .claim-icon {
+                    font-size: 1.4rem;
+                }
+                
+                .claim-type {
+                    color: #2c3e50;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+                
+                .claim-stats {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 12px;
+                }
+                
+                .claim-stat {
+                    text-align: center;
+                }
+                
+                .claim-number {
+                    display: block;
+                    color: #2c3e50;
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    line-height: 1;
+                }
+                
+                .claim-label {
+                    color: #6c757d;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .claim-stat.granted .claim-number {
+                    color: #28a745;
+                }
+                
+                .claim-progress {
+                    margin-top: 12px;
+                }
+                
+                .progress-bar {
+                    background: #e9ecef;
+                    border-radius: 10px;
+                    height: 8px;
+                    overflow: hidden;
+                    margin-bottom: 6px;
+                }
+                
+                .progress-fill {
+                    background: linear-gradient(90deg, #28a745, #20c997);
+                    height: 100%;
+                    border-radius: 10px;
+                    transition: width 0.5s ease;
+                }
+                
+                .progress-text {
+                    color: #495057;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                }
+                
+                .chart-container {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+                
+                .chart-title {
+                    color: #2c3e50;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin: 0 0 16px 0;
+                    text-align: center;
                 }
             `}</style>
         </div>

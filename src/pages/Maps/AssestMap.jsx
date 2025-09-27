@@ -189,8 +189,7 @@ const AssestMap = () => {
     }, []);
 
 
-    // --- District/State Details Renderer (UPDATED) ---
-
+    // --- District/State Details Renderer (ENHANCED UI) ---
     const renderDataAndChart = useCallback((name, data) => {
         const sidebar = sidebarRef.current;
         const sidebarContent = sidebarContentRef.current;
@@ -198,63 +197,215 @@ const AssestMap = () => {
 
         sidebarContent.innerHTML = "";
 
+        // Destroy existing chart
+        if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+        }
+
         const isDistrictSelected = !!selectedDistrict;
         const primaryName = isDistrictSelected ? selectedDistrict.name : selectedState;
         
-        // Use the new asset data if available, otherwise use default random stats
         const {
             totalAgriculturalArea, forestCoverIndex, homesteadsBuiltUpArea,
             waterBodyCount, miningNonForestUse, waterStressIndex,
             schemeEligibilityRatio, connectivityRoadProximity,
             totalIFRFiled, totalIFRGranted, totalCFRFiled, totalCFRGranted
         } = data;
-        
-        const titleText = isDistrictSelected ? `District Assets: ${primaryName}` : `State Summary: ${primaryName}`;
 
-        sidebarContent.innerHTML = `
-            <div class="info-entry"><p><b>--- ${titleText} ---</b></p></div>
-            ${isDistrictSelected ? '' : `<div class="info-entry"><p><b>State Level Data Shown</b></p></div>`}
-            <div class="info-entry"><p><b>Total Agricultural Area:</b> ${totalAgriculturalArea} sq km</p></div>
-            <div class="info-entry"><p><b>Forest Cover Index (FCI):</b> ${forestCoverIndex}</p></div>
-            <div class="info-entry"><p><b>Homesteads / Built-Up Area:</b> ${homesteadsBuiltUpArea} sq km</p></div>
-            <div class="info-entry"><p><b>Water Body Count (Major):</b> ${waterBodyCount}</p></div>
-            <div class="info-entry"><p><b>Mining/Non-Forest Use:</b> ${miningNonForestUse} sq km</p></div>
-            <div class="info-entry"><p><b>Water Stress Index (WSI):</b> ${waterStressIndex}</p></div>
-            <div class="info-entry"><p><b>Scheme Eligibility Ratio:</b> ${schemeEligibilityRatio}</p></div>
-            <div class="info-entry"><p><b>Connectivity/Road Proximity:</b> ${connectivityRoadProximity} km</p></div>
-            <canvas id="fraChart"></canvas>
+        // Enhanced Header Section
+        const headerSection = document.createElement('div');
+        headerSection.className = 'asset-header';
+        headerSection.innerHTML = `
+            <div class="header-content">
+                <h3 class="asset-title">🏗️ ${primaryName} Asset Analysis</h3>
+                <div class="asset-type-badge">
+                    ${isDistrictSelected ? 'District Level' : 'State Level'}
+                </div>
+            </div>
         `;
+
+        // Enhanced Statistics Grid
+        const statsSection = document.createElement('div');
+        statsSection.className = 'asset-stats-section';
+        statsSection.innerHTML = `
+            <h5 class="section-title">📊 Key Asset Metrics</h5>
+            <div class="stats-grid">
+                <div class="stat-card agricultural">
+                    <div class="stat-icon">🌾</div>
+                    <div class="stat-content">
+                        <div class="stat-number">${totalAgriculturalArea}</div>
+                        <div class="stat-label">km² Agricultural Area</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill agricultural-progress" style="width: ${Math.min((totalAgriculturalArea / 1000) * 100, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card forest">
+                    <div class="stat-icon">🌲</div>
+                    <div class="stat-content">
+                        <div class="stat-number">${(forestCoverIndex * 100).toFixed(1)}%</div>
+                        <div class="stat-label">Forest Cover Index</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill forest-progress" style="width: ${forestCoverIndex * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card homestead">
+                    <div class="stat-icon">🏠</div>
+                    <div class="stat-content">
+                        <div class="stat-number">${homesteadsBuiltUpArea}</div>
+                        <div class="stat-label">km² Built-up Area</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill homestead-progress" style="width: ${Math.min((homesteadsBuiltUpArea / 50) * 100, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card water">
+                    <div class="stat-icon">💧</div>
+                    <div class="stat-content">
+                        <div class="stat-number">${waterBodyCount}</div>
+                        <div class="stat-label">Water Bodies</div>
+                        <div class="stat-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill water-progress" style="width: ${Math.min((waterBodyCount / 100) * 100, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Environmental Impact Section
+        const environmentSection = document.createElement('div');
+        environmentSection.className = 'environment-section';
+        environmentSection.innerHTML = `
+            <h5 class="section-title">🌍 Environmental Impact</h5>
+            <div class="environment-cards">
+                <div class="environment-card mining">
+                    <div class="card-header">
+                        <div class="card-icon">⛏️</div>
+                        <span class="card-title">Mining Activity</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="impact-value">${miningNonForestUse} km²</div>
+                        <div class="impact-label">Non-forest land use</div>
+                    </div>
+                </div>
+
+                <div class="environment-card water-stress">
+                    <div class="card-header">
+                        <div class="card-icon">🌡️</div>
+                        <span class="card-title">Water Stress</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="impact-value">${waterStressIndex}/10</div>
+                        <div class="impact-label">Stress Index</div>
+                        <div class="stress-indicator">
+                            <div class="stress-bar" style="width: ${waterStressIndex * 10}%; background: ${waterStressIndex > 7 ? '#e74c3c' : waterStressIndex > 4 ? '#f39c12' : '#27ae60'}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Infrastructure Section
+        const infrastructureSection = document.createElement('div');
+        infrastructureSection.className = 'infrastructure-section';
+        infrastructureSection.innerHTML = `
+            <h5 class="section-title">🛣️ Infrastructure Analysis</h5>
+            <div class="infrastructure-grid">
+                <div class="infrastructure-item">
+                    <div class="item-icon">🎯</div>
+                    <div class="item-content">
+                        <span class="item-label">Scheme Eligibility</span>
+                        <div class="eligibility-bar">
+                            <div class="eligibility-fill" style="width: ${schemeEligibilityRatio * 100}%"></div>
+                        </div>
+                        <span class="item-value">${(schemeEligibilityRatio * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+
+                <div class="infrastructure-item">
+                    <div class="item-icon">🛤️</div>
+                    <div class="item-content">
+                        <span class="item-label">Road Connectivity</span>
+                        <span class="item-value">${connectivityRoadProximity} km proximity</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Rights Analysis Chart Section
+        const chartSection = document.createElement('div');
+        chartSection.className = 'chart-section';
+        chartSection.innerHTML = `
+            <h5 class="section-title">📈 Rights Analysis</h5>
+            <div class="chart-container">
+                <canvas id="fraChart" width="300" height="200"></canvas>
+            </div>
+        `;
+
+        // Append all sections
+        sidebarContent.appendChild(headerSection);
+        sidebarContent.appendChild(statsSection);
+        sidebarContent.appendChild(environmentSection);
+        sidebarContent.appendChild(infrastructureSection);
+        sidebarContent.appendChild(chartSection);
 
         sidebar.classList.add("visible");
 
-        if (chartRef.current) {
-            chartRef.current.destroy();
-        }
-
-        // Chart remains focused on FRA metrics, using the (hidden) random FRA data
-        const ctx = document.getElementById("fraChart").getContext("2d");
+        // Create enhanced doughnut chart
+        const ctx = document.getElementById('fraChart').getContext('2d');
         chartRef.current = new Chart(ctx, {
-            type: "pie",
+            type: 'doughnut',
             data: {
                 labels: ["IFR Granted", "IFR Denied", "CFR Granted", "CFR Denied"],
-                datasets: [
-                    {
-                        data: [
-                            totalIFRGranted,
-                            totalIFRFiled - totalIFRGranted,
-                            totalCFRGranted,
-                            totalCFRFiled - totalCFRGranted,
-                        ],
-                        backgroundColor: ["#4caf50", "#f44336", "#2196f3", "#ffeb3b"],
-                        borderColor: ["#388e3c", "#d32f2f", "#1976d2", "#fbc02d"],
-                        borderWidth: 1,
-                    },
-                ],
+                datasets: [{
+                    data: [
+                        totalIFRGranted,
+                        totalIFRFiled - totalIFRGranted,
+                        totalCFRGranted,
+                        totalCFRFiled - totalCFRGranted,
+                    ],
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.8)',
+                        'rgba(244, 67, 54, 0.8)',
+                        'rgba(33, 150, 243, 0.8)',
+                        'rgba(255, 235, 59, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(56, 142, 60, 1)',
+                        'rgba(211, 47, 47, 1)',
+                        'rgba(25, 118, 210, 1)',
+                        'rgba(251, 192, 45, 1)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: "top" },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: (tooltipItem) => {
@@ -264,10 +415,12 @@ const AssestMap = () => {
                                 return label;
                             },
                         },
-                    },
+                    }
                 },
-            },
+                cutout: '60%'
+            }
         });
+
     }, [selectedDistrict, selectedState]);
 
 
@@ -283,6 +436,11 @@ const AssestMap = () => {
         }
         else {
             renderDataAndChart(selectedDistrict.name, districtStats);
+        }
+        
+        // Ensure sidebar is visible
+        if (sidebarRef.current) {
+            sidebarRef.current.classList.add("visible");
         }
     }, [selectedState, selectedDistrict, renderDataAndChart]);
 
@@ -515,24 +673,26 @@ const AssestMap = () => {
 
     // --- Rendered Component Structure ---
     return (
-        <div style={{ height: "100vh", width: "100%", position: "relative" }}>
+        <div style={{ height: "100%", width: "100%", position: "relative" }}>
             <div ref={mapRef} id="map" style={{ height: "100%", width: "100%" }} />
             <div
                 ref={sidebarRef}
                 id="sidebar"
+                className="visible"
                 style={{
                     position: "absolute",
-                    top: 0,
-                    right: 0,
-                    width: "350px",
-                    height: "100%",
+                    top: 10,
+                    right: 10,
+                    width: "480px",
+                    height: "calc(100% - 20px)",
                     backgroundColor: "white",
-                    padding: "20px",
-                    boxShadow: "-2px 0 5px rgba(0,0,0,0.5)",
+                    padding: "24px",
+                    boxShadow: "-4px 0 20px rgba(0,0,0,0.15)",
                     zIndex: 1000,
                     overflowY: "auto",
-                    transform: "translateX(100%)",
+                    transform: "translateX(0%)",
                     transition: "transform 0.3s ease-in-out",
+                    borderRadius: "12px 0 0 12px",
                 }}
             >
                 <div
@@ -541,9 +701,9 @@ const AssestMap = () => {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        borderBottom: "1px solid #ccc",
-                        paddingBottom: "10px",
-                        marginBottom: "10px"
+                        borderBottom: "1px solid #e9ecef",
+                        paddingBottom: "16px",
+                        marginBottom: "16px"
                     }}
                 >
                     <h3>
@@ -561,13 +721,20 @@ const AssestMap = () => {
                 </div>
 
                 {/* State Filter Dropdown */}
-                <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-                    <label htmlFor="state-select">Select State:</label>
+                <div style={{ marginBottom: "16px", marginTop: "8px" }}>
+                    <label htmlFor="state-select" style={{ fontSize: "14px", fontWeight: "500", color: "#374151" }}>Select State:</label>
                     <select
                         id="state-select"
                         value={selectedState}
                         onChange={handleStateChange}
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{ 
+                            width: "100%", 
+                            padding: "10px 12px", 
+                            marginTop: "6px",
+                            border: "1px solid #d1d5db",
+                            borderRadius: "8px",
+                            fontSize: "14px"
+                        }}
                     >
                         {Object.keys(GEOJSON_URLS).map((stateName) => (
                             <option key={stateName} value={stateName}>
@@ -578,13 +745,20 @@ const AssestMap = () => {
                 </div>
 
                 {/* District Filter Dropdown */}
-                <div style={{ marginBottom: "20px" }}>
-                    <label htmlFor="district-select">Select District (Optional):</label>
+                <div style={{ marginBottom: "16px" }}>
+                    <label htmlFor="district-select" style={{ fontSize: "14px", fontWeight: "500", color: "#374151" }}>Select District (Optional):</label>
                     <select
                         id="district-select"
                         value={selectedDistrict ? selectedDistrict.name : ""}
                         onChange={handleDistrictSelect}
-                        style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+                        style={{ 
+                            width: "100%", 
+                            padding: "10px 12px", 
+                            marginTop: "6px",
+                            border: "1px solid #d1d5db",
+                            borderRadius: "8px",
+                            fontSize: "14px"
+                        }}
                         disabled={districts.length === 0}
                     >
                         <option value="">-- View State Summary --</option>
@@ -600,10 +774,284 @@ const AssestMap = () => {
                     <p>Loading data...</p>
                 </div>
             </div>
-            {/* Inline style for .visible class (required for sidebar animation) */}
+            {/* Enhanced CSS styles for modern Asset Map UI */}
             <style>{`
                 #sidebar.visible {
                     transform: translateX(0%);
+                }
+
+                /* Asset Analysis Header Styles */
+                .asset-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-bottom: 24px;
+                    color: white;
+                }
+
+                .header-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .asset-title {
+                    margin: 0;
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                }
+
+                .asset-type-badge {
+                    background: rgba(255, 255, 255, 0.2);
+                    padding: 6px 12px;
+                    border-radius: 16px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    backdrop-filter: blur(10px);
+                }
+
+                /* Asset Statistics Section */
+                .asset-stats-section {
+                    margin-bottom: 20px;
+                }
+
+                .section-title {
+                    color: #2c3e50;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    margin: 0 0 12px 0;
+                }
+
+                .stats-grid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 16px;
+                    margin-bottom: 24px;
+                }
+
+                .stat-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                    transition: transform 0.2s, box-shadow 0.2s;
+                }
+
+                .stat-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                }
+
+                .stat-icon {
+                    font-size: 1.8rem;
+                    flex-shrink: 0;
+                }
+
+                .stat-content {
+                    flex: 1;
+                }
+
+                .stat-number {
+                    color: #2c3e50;
+                    font-size: 1.4rem;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    margin-bottom: 4px;
+                }
+
+                .stat-label {
+                    color: #6c757d;
+                    font-size: 0.8rem;
+                    line-height: 1.2;
+                    margin-bottom: 8px;
+                }
+
+                .stat-progress {
+                    margin-top: 8px;
+                }
+
+                .progress-bar {
+                    background: #e9ecef;
+                    border-radius: 6px;
+                    height: 6px;
+                    overflow: hidden;
+                }
+
+                .progress-fill {
+                    height: 100%;
+                    border-radius: 6px;
+                    transition: width 0.5s ease;
+                }
+
+                .agricultural-progress {
+                    background: linear-gradient(90deg, #28a745, #20c997);
+                }
+
+                .forest-progress {
+                    background: linear-gradient(90deg, #2d5a27, #4a7c59);
+                }
+
+                .homestead-progress {
+                    background: linear-gradient(90deg, #6f42c1, #e83e8c);
+                }
+
+                .water-progress {
+                    background: linear-gradient(90deg, #17a2b8, #007bff);
+                }
+
+                /* Environment Section */
+                .environment-section {
+                    margin-bottom: 20px;
+                }
+
+                .environment-cards {
+                    display: grid;
+                    gap: 12px;
+                }
+
+                .environment-card {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 18px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border-left: 4px solid;
+                    transition: transform 0.2s ease;
+                }
+
+                .environment-card:hover {
+                    transform: translateX(4px);
+                }
+
+                .environment-card.mining {
+                    border-left-color: #fd7e14;
+                }
+
+                .environment-card.water-stress {
+                    border-left-color: #dc3545;
+                }
+
+                .card-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    margin-bottom: 12px;
+                }
+
+                .card-icon {
+                    font-size: 1.4rem;
+                }
+
+                .card-title {
+                    color: #2c3e50;
+                    font-weight: 600;
+                    font-size: 0.95rem;
+                }
+
+                .card-content {
+                    padding-left: 32px;
+                }
+
+                .impact-value {
+                    color: #2c3e50;
+                    font-size: 1.3rem;
+                    font-weight: 700;
+                    line-height: 1;
+                    margin-bottom: 4px;
+                }
+
+                .impact-label {
+                    color: #6c757d;
+                    font-size: 0.8rem;
+                }
+
+                .stress-indicator {
+                    margin-top: 8px;
+                    background: #e9ecef;
+                    height: 4px;
+                    border-radius: 2px;
+                    overflow: hidden;
+                }
+
+                .stress-bar {
+                    height: 100%;
+                    border-radius: 2px;
+                    transition: width 0.5s ease;
+                }
+
+                /* Infrastructure Section */
+                .infrastructure-section {
+                    margin-bottom: 20px;
+                }
+
+                .infrastructure-grid {
+                    display: grid;
+                    gap: 16px;
+                }
+
+                .infrastructure-item {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 18px;
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+
+                .item-icon {
+                    font-size: 1.5rem;
+                    flex-shrink: 0;
+                }
+
+                .item-content {
+                    flex: 1;
+                }
+
+                .item-label {
+                    display: block;
+                    color: #495057;
+                    font-weight: 500;
+                    font-size: 0.9rem;
+                    margin-bottom: 8px;
+                }
+
+                .item-value {
+                    color: #2c3e50;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                }
+
+                .eligibility-bar {
+                    background: #e9ecef;
+                    height: 6px;
+                    border-radius: 3px;
+                    margin: 8px 0;
+                    overflow: hidden;
+                }
+
+                .eligibility-fill {
+                    background: linear-gradient(90deg, #28a745, #20c997);
+                    height: 100%;
+                    border-radius: 3px;
+                    transition: width 0.5s ease;
+                }
+
+                /* Chart Section */
+                .chart-section {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+
+                .chart-container {
+                    margin-top: 16px;
                 }
             `}</style>
         </div>
