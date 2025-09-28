@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import Plot3DView from './plot3dview';
+
 // import Chart from "chart.js/auto"; // REMOVED: Chart.js is no longer needed
 
 // --- Utility: Random Stats Generator (Keep this outside the component) ---
@@ -122,6 +124,11 @@ const PLOT_HOVER_STYLE = {
 
 
 const AssestMap = () => {
+   const [selectedPlot, setSelectedPlot] = useState(null);
+const [show3D, setShow3D] = useState(false);
+
+
+
     const [selectedState, setSelectedState] = useState("Madhya Pradesh");
     const [districts, setDistricts] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -389,56 +396,94 @@ const AssestMap = () => {
 
 
     // ## The Plot Rendering Effect ##
-    useEffect(() => {
-        const map = mapInstanceRef.current;
+// --- The Plot Rendering Effect Effect ---
+// (Only this useEffect block is shown for the fix)
+useEffect(() => {
+    const map = mapInstanceRef.current;
 
-        // 1. Clean up previous plot layer
+    // 1. Clean up previous plot layer
+    if (plotLayerRef.current) {
+        map.removeLayer(plotLayerRef.current);
+        plotLayerRef.current = null;
+    }
+
+    // 2. Load plots only for Balaghat in Madhya Pradesh
+    if (map && selectedDistrict && selectedState === "Madhya Pradesh" && selectedDistrict.name === "Balaghat") {
+        const plotLayerGroup = L.layerGroup().addTo(map);
+        const bounds = L.latLngBounds();
+
+        BALAGHAT_PLOTS.forEach(plot => {
+            // L.polygon uses the 'coords' array (which is a 4-point box) and PLOT_POLYGON_STYLE
+            const polygon = L.polygon(plot.coords, PLOT_POLYGON_STYLE)
+                .on('click', (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    renderPlotDetails(plot); // Shows plot details on click
+                    // Zoom to the clicked plot
+                    map.fitBounds(e.target.getBounds(), { maxZoom: 16 });
+                    // ✅ CRITICAL LINE 1: Set Plot and Show 3D for Balaghat
+                    setSelectedPlot(plot); 
+                    setShow3D(true);
+                })
+                .on('mouseover', function () {
+                    this.setStyle(PLOT_HOVER_STYLE);
+                    this.bringToFront();
+                })
+                .on('mouseout', function () {
+                    this.setStyle(PLOT_POLYGON_STYLE);
+                })
+                .addTo(plotLayerGroup);
+            
+            bounds.extend(polygon.getBounds());
+            polygon.bindTooltip(`Plot ID: ${plot.plot_id}`, { sticky: true });
+        });
+
+        plotLayerRef.current = plotLayerGroup;
+        // 3. Zoom the map to fit all the plots (the 'boxes')
+        map.fitBounds(bounds.pad(0.1));
+    }
+    // 👇 FIX APPLIED HERE: For Seoni district
+    if (map && selectedDistrict && selectedState === "Madhya Pradesh" && selectedDistrict.name === "Seoni") {
+        const plotLayerGroup = L.layerGroup().addTo(map);
+        const bounds = L.latLngBounds();
+
+        BALAGHAT_PLOTS.forEach(plot => {
+            // L.polygon uses the 'coords' array (which is a 4-point box) and PLOT_POLYGON_STYLE
+            const polygon = L.polygon(plot.coords, PLOT_POLYGON_STYLE)
+                .on('click', (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    renderPlotDetails(plot); // Shows plot details on click
+                    // Zoom to the clicked plot
+                    map.fitBounds(e.target.getBounds(), { maxZoom: 16 });
+                    // ✅ CRITICAL LINE 2: Set Plot and Show 3D for Seoni (Missing in original code)
+                    setSelectedPlot(plot); 
+                    setShow3D(true);
+                })
+                .on('mouseover', function () {
+                    this.setStyle(PLOT_HOVER_STYLE);
+                    this.bringToFront();
+                })
+                .on('mouseout', function () {
+                    this.setStyle(PLOT_POLYGON_STYLE);
+                })
+                .addTo(plotLayerGroup);
+            
+            // setSelectedPlot(plot); // This line was outside the click handler and needed to be removed/moved
+            bounds.extend(polygon.getBounds());
+            polygon.bindTooltip(`Plot ID: ${plot.plot_id}`, { sticky: true });
+        });
+
+        plotLayerRef.current = plotLayerGroup;
+        // 3. Zoom the map to fit all the plots (the 'boxes')
+        map.fitBounds(bounds.pad(0.1));
+    }
+    // 4. Cleanup function
+    return () => {
         if (plotLayerRef.current) {
             map.removeLayer(plotLayerRef.current);
             plotLayerRef.current = null;
         }
-
-        // 2. Load plots only for Balaghat in Madhya Pradesh
-        if (map && selectedDistrict && selectedState === "Madhya Pradesh" && selectedDistrict.name === "Balaghat") {
-            const plotLayerGroup = L.layerGroup().addTo(map);
-            const bounds = L.latLngBounds();
-
-            BALAGHAT_PLOTS.forEach(plot => {
-                // L.polygon uses the 'coords' array (which is a 4-point box) and PLOT_POLYGON_STYLE
-                const polygon = L.polygon(plot.coords, PLOT_POLYGON_STYLE)
-                    .on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        renderPlotDetails(plot); // Shows plot details on click
-                        // Zoom to the clicked plot
-                        map.fitBounds(e.target.getBounds(), { maxZoom: 16 });
-                    })
-                    .on('mouseover', function () {
-                        this.setStyle(PLOT_HOVER_STYLE);
-                        this.bringToFront();
-                    })
-                    .on('mouseout', function () {
-                        this.setStyle(PLOT_POLYGON_STYLE);
-                    })
-                    .addTo(plotLayerGroup);
-
-                bounds.extend(polygon.getBounds());
-                polygon.bindTooltip(`Plot ID: ${plot.plot_id}`, { sticky: true });
-            });
-
-            plotLayerRef.current = plotLayerGroup;
-            // 3. Zoom the map to fit all the plots (the 'boxes')
-            map.fitBounds(bounds.pad(0.1));
-        }
-
-        // 4. Cleanup function
-        return () => {
-            if (plotLayerRef.current) {
-                map.removeLayer(plotLayerRef.current);
-                plotLayerRef.current = null;
-            }
-        };
-    }, [selectedDistrict, selectedState, renderPlotDetails]);
-
+    };
+}, [selectedDistrict, selectedState, renderPlotDetails]);
 
     // --- Event Handlers ---
 
@@ -615,6 +660,12 @@ const AssestMap = () => {
     // --- Rendered Component Structure ---
     return (
         <div style={{ height: "100%", width: "100%", position: "relative" }}>
+           {show3D && <Plot3DView
+        plotData={selectedPlot}
+        visible={show3D}
+        onClose={() => setShow3D(false)}
+      />}
+
             <div ref={mapRef} id="map" style={{ height: "100%", width: "100%" }} />
             <div
                 ref={sidebarRef}
