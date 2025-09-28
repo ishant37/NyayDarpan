@@ -30,6 +30,8 @@ const stateStyle = {
 const TopoGraphicalMap = () => {
   const mapRef = useRef(null);
   const sidebarRef = useRef(null);
+   const mapInstanceRef = useRef(null); // ✅ this was missing
+    const layerGroupRef = useRef(null); // ✅ FIX: declare this
   const sidebarContentRef = useRef(null);
 
   // State for sidebar and filters
@@ -49,7 +51,7 @@ const TopoGraphicalMap = () => {
 
   // Storage for all GeoJSON data and Leaflet layers
   const geojsonDataRef = useRef({});
-  const layerControlsRef = useRef({});
+//   const layerControlsRef = useRef({});
 
   // Helper to safely extract coordinates (for boundary simulation)
   const extractCoords = (geometry) => {
@@ -280,21 +282,64 @@ const TopoGraphicalMap = () => {
   };
 
   // --- Map and Layer Management (Runs on state/district change) ---
-  useEffect(() => {
-    // Map initialization
-    if (!mapRef.current) return;
-    if (!window._TopoGraphicalMapInstance) {
-      const map = L.map(mapRef.current).setView([23.4, 78.2], 5);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-      window._TopoGraphicalMapInstance = map;
-      createLegend(map);
-      layerControlsRef.current = L.layerGroup().addTo(map);
-    }
-    const map = window._TopoGraphicalMapInstance;
-    const layerGroup = layerControlsRef.current;
+// --- Map Initialization + GeoJSON Rendering ---
+// Assume these refs are defined at the top of your component:
+// const mapRef = useRef(null);
+// const mapInstanceRef = useRef(null); 
+// const layerGroupRef = useRef(null); 
+// const sidebarRef = useRef(null); 
+
+// Assume these states are defined:
+// const [selectedState, setSelectedState] = useState(null);
+// const [selectedDistrict, setSelectedDistrict] = useState(null);
+// const [availableDistricts, setAvailableDistricts] = useState([]);
+// const [selectedVillage, setSelectedVillage] = useState(null);
+
+// =======================================================
+// 1. Map Initialization (Runs only ONCE)
+// =======================================================
+useEffect(() => {
+    // Only run if the map container exists and the map instance hasn't been created
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    // Initialize the map
+    const map = L.map(mapRef.current).setView([23.4, 78.2], 5);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Store references
+    mapInstanceRef.current = map;
+    window._TopoGraphicalMapInstance = map; // For legacy/external use if needed
+
+    // Initialize empty LayerGroup for all dynamic GeoJSON layers
+    layerGroupRef.current = L.layerGroup().addTo(map);
     
+    // NOTE: createLegend is NOT called here. It is called in the dynamic effect below.
+
+    return () => {
+        // Cleanup on unmount
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.remove();
+            mapInstanceRef.current = null;
+            delete window._TopoGraphicalMapInstance;
+        }
+    };
+}, []); 
+
+// =======================================================
+// 2. Dynamic Map/Data Updates (Runs on state/district change)
+// =======================================================
+useEffect(() => {
+    const map = mapInstanceRef.current;
+    const layerGroup = layerGroupRef.current;
+
+    // Exit if map or layer group hasn't been initialized by the first useEffect
+    if (!map || !layerGroup) return; 
+
+    // 💡 FIX 1: Re-create the legend on every render to ensure it reflects the current layer (e.g., state vs. village).
+    createLegend(map); 
+
     // Clear all existing GeoJSON layers
     layerGroup.clearLayers();
 
@@ -359,7 +404,8 @@ const TopoGraphicalMap = () => {
 
         villageGeojson.features.forEach((f, i) => {
             if (!f.geometry) return;
-            const allRings = extractCoords(f.geometry);
+            // Assuming extractCoords is defined and correctly handles GeoJSON geometry
+            const allRings = extractCoords(f.geometry); 
 
             allRings.forEach(coordsRing => {
                 const latlngs = coordsRing.map(([lng, lat]) => [lat, lng]);
@@ -385,6 +431,7 @@ const TopoGraphicalMap = () => {
     if (selectedDistrict === 'Balaghat' && villageLayer) {
         map.fitBounds(villageLayer.getBounds(), { maxZoom: 9 });
     } else if (selectedState) {
+        // Find the layer added in step 1 that matches the selected state
         const stateLayer = layerGroup.getLayers().find(layer => layer.options?.stateName === selectedState);
         if (stateLayer) {
             map.fitBounds(stateLayer.getBounds(), { maxZoom: 7 });
@@ -393,7 +440,79 @@ const TopoGraphicalMap = () => {
         map.setView([23.4, 78.2], 5);
     }
 
-  }, [selectedState, selectedDistrict, availableDistricts, villageStyle, createLegend]); 
+// Dependencies include all variables/functions used inside the effect that come from props or state
+}, [selectedState, selectedDistrict, availableDistricts, villageStyle, createLegend, geojsonDataRef]);
+
+// --- Load GeoJSON when state changes ---
+// --- Load GeoJSON on state change ---
+useEffect(() => {
+  const map = mapInstanceRef.current;
+  if (!map || !selectedState || !layerGroupRef.current) return;
+
+  // Clear old layers
+  layerGroupRef.current.clearLayers();
+
+  const stateData = geojsonDataRef.current[selectedState];
+  if (!stateData) return;
+
+  // --- Case 1: Normal State GeoJSON ---
+  const geoLayer = L.geoJSON(stateData, {
+    style: stateStyle,
+    onEachFeature: (feature, layer) => {
+      const districtName =
+        feature.properties.NAME ||
+        feature.properties.DISTRICT ||
+        feature.properties.DIST_NAME ||
+        "Unknown";
+
+      layer.bindPopup(`<strong>${districtName}</strong>`);
+
+      // ✅ When a district is clicked inside Madhya Pradesh
+      layer.on("click", () => {
+        setSelectedDistrict(districtName);
+
+        if (selectedState === "Madhya Pradesh") {
+          // 🔥 Load villages GeoJSON instead of just highlighting the district
+          const villagesData = geojsonDataRef.current["MadhyaPradeshVillages"]; 
+          if (villagesData) {
+            layerGroupRef.current.clearLayers();
+
+            const villageLayer = L.geoJSON(villagesData, {
+              style: { color: "#228B22", weight: 1, fillOpacity: 0.3 },
+              onEachFeature: (vFeature, vLayer) => {
+                const vName =
+                  vFeature.properties.VILLNAME ||
+                  vFeature.properties.NAME ||
+                  "Unknown Village";
+                vLayer.bindPopup(`<strong>${vName}</strong>`);
+              },
+            });
+
+            layerGroupRef.current.addLayer(villageLayer);
+
+            try {
+              map.fitBounds(villageLayer.getBounds(), { padding: [30, 30], maxZoom: 12 });
+            } catch (err) {
+              console.warn("Could not fit bounds for villages:", err);
+            }
+          }
+        }
+      });
+    },
+  });
+
+  layerGroupRef.current.addLayer(geoLayer);
+
+  try {
+    map.fitBounds(geoLayer.getBounds(), { padding: [30, 30], maxZoom: 7 });
+  } catch (err) {
+    console.warn("Could not fit bounds:", err);
+  }
+
+  // ✅ Update legend when state changes
+  createLegend(map);
+
+}, [selectedState]);
 
   // Handler for state change
   const handleStateChange = (event) => {
@@ -443,7 +562,7 @@ const TopoGraphicalMap = () => {
           position: "absolute",
           top: 10,
           right: 10,
-          width: "400px",
+          width: "340px",
           height: "calc(100% - 20px)",
           backgroundColor: "white",
           padding: "20px",
