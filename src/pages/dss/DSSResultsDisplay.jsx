@@ -1,7 +1,7 @@
 // src/pages/dss/DSSResultsDisplay.jsx
 import React, { useState } from 'react';
 import { communitySchemes } from '../../data/dssData';
-import HeatmapModal from './HeatmapModal';
+import EnhancedHeatmapModal from './EnhancedHeatmapModal';
 import { CheckCircle, TrendingUp, BarChart, Users, DollarSign, Target, MapPin } from 'lucide-react';
 
 const priorityConfig = {
@@ -109,7 +109,11 @@ const DSSResultsDisplay = ({ state, district }) => {
       </div>
 
       {selectedScheme && (
-        <HeatmapModal scheme={selectedScheme} onClose={handleCloseModal} />
+        <EnhancedHeatmapModal 
+          scheme={selectedScheme} 
+          onClose={handleCloseModal} 
+          isOpen={!!selectedScheme}
+        />
       )}
 
       <style jsx global>{`

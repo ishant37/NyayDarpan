@@ -19,6 +19,7 @@ import FraPattaTemplate from '../components/FraPattaTemplate';
 import { generatePDF, generatePDFFilename } from '../utils/pdfGenerator';
 import { generateQRCode, generateFraId } from '../utils/fraUtils';
 import { Button } from '../components/ui/button'; // Using the consistent button
+import EnhancedHeatmapModal from './dss/EnhancedHeatmapModal';
 
 // --- Reusable Components for this page ---
 
@@ -146,6 +147,7 @@ const ScanDoc = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [qrCodeDataURL, setQrCodeDataURL] = useState('');
+  const [isHeatmapOpen, setIsHeatmapOpen] = useState(false);
 
   const handleFileDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -200,12 +202,36 @@ const ScanDoc = () => {
     }
   };
 
-  const handleViewInMap = () => navigate(`/atlas?district=${encodeURIComponent(results.DISTRICT)}&village=${encodeURIComponent(results.VILLAGE)}&khasra=${results.KHASRA_NO}`);
+  const handleViewInMap = () => {
+    // Create a mock scheme object based on the analysis results
+    const mockScheme = {
+      name: results.documentType || 'वन अधिकार प्रमाण पत्र',
+      district: results.DISTRICT,
+      village: results.VILLAGE,
+      khasra: results.KHASRA_NO
+    };
+    setIsHeatmapOpen(true);
+  };
 
   return (
     <>
       <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -10 }}><div id="fra-patta-template">{results && qrCodeDataURL && <FraPattaTemplate data={results} qrCodeDataURL={qrCodeDataURL} />}</div></div>
       <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleFileDrop} />
+      
+      {/* Enhanced Heatmap Modal */}
+      {results && (
+        <EnhancedHeatmapModal
+          isOpen={isHeatmapOpen}
+          scheme={{
+            name: results.documentType || 'वन अधिकार प्रमाण पत्र',
+            district: results.DISTRICT,
+            village: results.VILLAGE,
+            khasra: results.KHASRA_NO
+          }}
+          scannedData={results}
+          onClose={() => setIsHeatmapOpen(false)}
+        />
+      )}
       
       <div className="bg-gray-50 min-h-screen p-4 sm:p-6 lg:p-8">
         <header className="mb-8 max-w-6xl mx-auto flex items-center gap-4">
