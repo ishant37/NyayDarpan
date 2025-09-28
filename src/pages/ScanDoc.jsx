@@ -208,11 +208,12 @@ const ScanDoc = () => {
       <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleFileDrop} />
       
       <div className="bg-gray-50 min-h-screen p-4 sm:p-6 lg:p-8">
-        <header className="mb-8 max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900">AI Document Digitizer</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Automatically extract information from FRA documents to generate digital Pattas.
-            </p>
+        <header className="mb-8 max-w-6xl mx-auto flex items-center gap-4">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/1200px-Emblem_of_India.svg.png" alt="National Emblem of India" className="h-14 w-auto"/>
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900">FRA Document Digitization Portal</h1>
+                <p className="mt-1 text-sm text-gray-600">Ministry of Tribal Affairs, Government of India</p>
+            </div>
         </header>
         
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">

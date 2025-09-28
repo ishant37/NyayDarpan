@@ -1,0 +1,73 @@
+// src/data/dssData.js
+export const communitySchemes = [
+  {
+    id: 'scheme-001',
+    name: 'Jal Jeevan Mission',
+    priority: 'High',
+    ministry: 'Ministry of Jal Shakti',
+    affectedHouseholds: 'Approx. 85%',
+    estimatedBudget: '₹45,00,000 - ₹60,00,000',
+    description: 'A central government initiative to provide safe and adequate drinking water through individual household tap connections by 2024.',
+    evidence: [
+      'Analysis of tap water penetration data indicates only 15% of households have functional taps.',
+      'Groundwater level data shows a significant drop in the last 5 years, making handpumps unreliable.',
+      'High incidence of water-borne diseases reported in local health surveys.',
+    ],
+  },
+  {
+    id: 'scheme-002',
+    name: 'MGNREGA for Community Ponds',
+    priority: 'High',
+    ministry: 'Ministry of Rural Development',
+    affectedHouseholds: 'Approx. 60%',
+    estimatedBudget: '₹15,00,000 - ₹25,00,000',
+    description: 'Leverages the Mahatma Gandhi National Rural Employment Guarantee Act to create sustainable water conservation assets like community ponds and check dams.',
+    evidence: [
+      'Satellite imagery analysis reveals multiple dried-up water bodies.',
+      'Soil quality data indicates high water runoff and low moisture retention.',
+      'Employment data shows a high demand for non-agricultural work during the dry season.',
+    ],
+  },
+  {
+    id: 'scheme-003',
+    name: 'Pradhan Mantri Gram Sadak Yojana (PMGSY)',
+    priority: 'Medium',
+    ministry: 'Ministry of Rural Development',
+    affectedHouseholds: 'Approx. 100%',
+    estimatedBudget: '₹1,20,00,000 - ₹2,00,00,000',
+    description: 'A nationwide plan in India to provide good all-weather road connectivity to unconnected villages.',
+    evidence: [
+      'PM Gati Shakti data shows no all-weather roads connecting the main village cluster to the district highway.',
+      'Economic survey points to difficulty in transporting agricultural produce to market, leading to lower prices.',
+      'School attendance records show a drop during the monsoon season due to inaccessible roads.',
+    ],
+  },
+  {
+    id: 'scheme-004',
+    name: 'National Food Security Mission (NFSM)',
+    priority: 'Medium',
+    ministry: 'Ministry of Agriculture & Farmers Welfare',
+    affectedHouseholds: 'Approx. 70%',
+    estimatedBudget: '₹10,00,000 - ₹18,00,000 (for seeds & training)',
+    description: 'Aims to increase production of rice, wheat, pulses, and coarse cereals through area expansion and productivity enhancement.',
+    evidence: [
+      'Crop pattern analysis shows high dependency on a single crop, increasing vulnerability.',
+      'Soil health card data suggests a deficiency in key nutrients which can be addressed by crop diversification.',
+      'Below-average crop yields reported for the last three consecutive years.',
+    ],
+  },
+  {
+    id: 'scheme-005',
+    name: 'DAJGUA Livelihood Program',
+    priority: 'Low',
+    ministry: 'Ministry of Tribal Affairs',
+    affectedHouseholds: 'Approx. 30%',
+    estimatedBudget: '₹8,00,000 - ₹12,00,000',
+    description: 'Special focus on livelihood enhancement for particularly vulnerable tribal groups through skill development and support for traditional industries.',
+    evidence: [
+      'Socio-economic data indicates a small population of a Particularly Vulnerable Tribal Group (PVTG) in the selected area.',
+      'While not a high-priority need for the entire community, this scheme offers targeted benefits to the most marginalized.',
+      'Local artisan products have high potential but lack market access, which this scheme can address.',
+    ],
+  },
+];

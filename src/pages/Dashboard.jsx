@@ -32,9 +32,16 @@ import {
   Search,
   Sun,
   Moon,
+  Settings,
+  Sparkles,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+
+// Import new report system
+import ReportTemplate from "../components/reports/ReportTemplate.jsx";
+import ReportExportOptions from "../components/reports/ReportExportOptions.jsx";
+import { reportGenerator } from "../utils/reportGenerator.js";
 
 // --- Helper Components ---
 
@@ -107,21 +114,33 @@ const DashboardHeader = () => {
             {/* Can add a logo or title here if needed */}
           </div>
           <div className="flex-1 flex justify-center px-2 lg:ml-6 lg:justify-end">
-            <div className="w-full max-w-lg lg:max-w-xs">
-              <label htmlFor="search" className="sr-only">Search</label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                </div>
-                <input
-                  id="search"
-                  name="search"
-                  className="block w-full rounded-md border-0 bg-gray-100 py-2.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-200 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-gray-900 sm:text-sm sm:leading-6"
-                  placeholder="Search Claims, Documents, Villages..."
-                  type="search"
-                />
-              </div>
-            </div>
+            <div className="w-full max-w-lg lg:max-w-md">
+  <label htmlFor="search" className="sr-only">Search</label>
+  <div className="relative">
+    {/* Search Icon */}
+    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+      <Search className="h-5 w-5 text-gray-400" aria-hidden="true" />
+    </div>
+
+    {/* Input */}
+    <input
+      id="search"
+      name="search"
+      type="search"
+      placeholder="Search Claims, Documents, Villages..."
+      className="block w-full rounded-2xl border border-gray-200 bg-white py-3 pl-10 pr-12 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-gray-900 focus:ring-2 focus:ring-gray-900 transition duration-200"
+    />
+
+    {/* Clear Button */}
+    <button
+      type="button"
+      className="absolute inset-y-0 right-2 flex items-center pr-2 text-gray-400 hover:text-gray-600"
+    >
+      ✕
+    </button>
+  </div>
+</div>
+
           </div>
           <div className="flex items-center gap-2 ml-4">
               <button className="p-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors">
@@ -135,7 +154,7 @@ const DashboardHeader = () => {
                 </span>
               </button>
               <button className="p-1 rounded-full hover:bg-gray-100 transition-colors">
-                <img className="h-8 w-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1553523352-73a1199a4e1f?q=80&w=200&h=200&auto=format&fit=crop" alt="User" />
+                <img className="h-8 w-8 rounded-full object-cover" src="https://avatars.githubusercontent.com/u/143737164?v=4" alt="User" />
               </button>
           </div>
         </div>
@@ -156,6 +175,7 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(() => getInitialStateData(selectedState));
   const [loading, setLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [showReportOptions, setShowReportOptions] = useState(false);
   const pendingClaimsCount = pendingClaimsData.length;
 
   useEffect(() => {
@@ -166,6 +186,19 @@ export default function Dashboard() {
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedState]);
+
+  // Close export options when clicking outside (removed since we have modal with backdrop)
+  useEffect(() => {
+    // Handle escape key to close modal
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && showReportOptions) {
+        setShowReportOptions(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showReportOptions]);
 
   const handleExportPDF = () => {
     setIsExporting(true);
@@ -183,6 +216,51 @@ export default function Dashboard() {
         setIsExporting(false);
         alert("Sorry, there was an error exporting the report.");
       });
+  };
+
+  // New advanced export handler
+  const handleAdvancedExport = async (options) => {
+    setIsExporting(true);
+    
+    try {
+      const reportData = {
+        ...dashboardData,
+        donutData,
+        claimTypeData,
+        selectedState
+      };
+
+      let result;
+      switch (options.format) {
+        case 'pdf':
+          result = await reportGenerator.generatePDFReport('report-template', options);
+          break;
+        case 'excel':
+          result = await reportGenerator.generateExcelReport(reportData, options);
+          break;
+        case 'csv':
+          result = await reportGenerator.generateCSVReport(reportData, options);
+          break;
+        case 'package':
+          result = await reportGenerator.generateReportPackage('report-template', reportData, options);
+          break;
+        default:
+          throw new Error('Invalid format selected');
+      }
+
+      if (result.success) {
+        // Show success message
+        alert(result.message);
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`Export failed: ${error.message}`);
+    } finally {
+      setIsExporting(false);
+      setShowReportOptions(false);
+    }
   };
 
   if (loading) {
@@ -218,20 +296,53 @@ export default function Dashboard() {
           </Link>
         )}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Forest Rights Act Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Comprehensive overview for {selectedState.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}.
-            </p>
-          </div>
+         <div className="flex items-center space-x-4 border-b border-gray-200 pb-4">
+  {/* Emblem */}
+  <img
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/1200px-Emblem_of_India.svg.png"
+    alt="National Emblem of India"
+    className="h-16 w-auto"
+  />
+
+  {/* Text Section */}
+  <div>
+    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+      Forest Rights Act Dashboard
+    </h1>
+    <p className="mt-1 text-sm text-gray-600 italic">
+      Comprehensive overview for{" "}
+      <span className="font-medium text-gray-800">
+        {selectedState.replace("-", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+      </span>.
+    </p>
+  </div>
+</div>
+
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <select value={selectedState} onChange={handleStateChange} className="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400">
               <option value="madhya-pradesh">Madhya Pradesh</option>
               <option value="odisha">Odisha</option>
               <option value="telangana">Telangana</option>
-              <option value="rajasthan">Rajasthan</option>
+              
             </select>
-            <Button variant="outline" onClick={handleExportPDF} isLoading={isExporting}><Download className="w-4 h-4 mr-2" />{isExporting ? "Exporting..." : "Export Report"}</Button>
+            
+            {/* Export Options */}
+            <div className="relative export-options-container">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowReportOptions(!showReportOptions)}
+                className="flex items-center bg-gradient-to-r from-red-500 to-indigo-600 text-black border-3px solid red"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Export Studio
+                <span className={`ml-2 transition-transform duration-300 ${showReportOptions ? 'rotate-180' : ''}`}>⚡</span>
+              </Button>
+            </div>
+
+            <Button variant="outline" onClick={handleExportPDF} isLoading={isExporting} className="hover:shadow-md transition-all">
+              <Download className="w-4 h-4 mr-2" />
+              {isExporting ? "Exporting..." : "Quick PDF"}
+            </Button>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -296,6 +407,31 @@ export default function Dashboard() {
             </Card>
         </div>
       </main>
+
+      {/* Export Studio Modal */}
+      {showReportOptions && (
+        <ReportExportOptions
+          onExport={handleAdvancedExport}
+          isExporting={isExporting}
+          availableFormats={['pdf', 'excel', 'csv', 'package']}
+          onClose={() => setShowReportOptions(false)}
+        />
+      )}
+
+      {/* Hidden Report Template for Advanced Export */}
+      <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+        <ReportTemplate
+          reportData={{
+            ...dashboardData,
+            donutData,
+            claimTypeData
+          }}
+          stateName={selectedState.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          dateRange="Last 12 Months"
+          reportTitle="Forest Rights Act - Comprehensive Report"
+          reportSubtitle={`Performance Analysis for ${selectedState.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`}
+        />
+      </div>
     </div>
   );
 }

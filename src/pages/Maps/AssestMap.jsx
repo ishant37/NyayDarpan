@@ -3,7 +3,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Plot3DView from './plot3dview';
 
-// import Chart from "chart.js/auto"; // REMOVED: Chart.js is no longer needed
+
 
 // --- Utility: Random Stats Generator (Keep this outside the component) ---
 
@@ -18,7 +18,11 @@ const generateDistrictAssets = (factor) => ({
     schemeEligibilityRatio: (Math.random()).toFixed(2), // 0.0 to 1.0
     connectivityRoadProximity: (Math.random() * 100).toFixed(2), // km
     
-    // REMOVED: Chart-related stats (totalIFRFiled, totalIFRGranted, totalCFRFiled, totalCFRGranted)
+    // Kept for the chart functionality in the existing code structure
+    totalIFRFiled: Math.floor(Math.random() * 50 * factor) + 5,
+    totalIFRGranted: Math.floor(Math.random() * 40 * factor) + 2,
+    totalCFRFiled: Math.floor(Math.random() * 30 * factor) + 3,
+    totalCFRGranted: Math.floor(Math.random() * 20 * factor) + 1,
 });
 
 
@@ -50,45 +54,45 @@ const TRIPURA_DISTRICT_NAMES = [
 // 💡 CRITICAL FIX: Coordinates are made very small and tightly clustered around Balaghat's center (approx 21.8, 80.2)
 const BALAGHAT_PLOTS = [
     {
-       // Plot 1: Sanguem (Near 21.80, 80.18)
-       coords: [
-         [21.81, 80.18], [21.81, 80.19], 
-         [21.80, 80.19], [21.80, 80.18]
-       ],
-       village_nam: 'Sanguem', tenant_name: 'Yusuf Khan', plot_id: '03b59', kha_no: '5s22c2', Land_Area: '2.8 acre', Land_type: 'Commercial', Rent_Cess: '₹280', Last_Published_Date: '2024-07-03'
+     // Plot 1: Sanguem (Near 21.80, 80.18)
+     coords: [
+        [21.81, 80.18], [21.81, 80.19], 
+    [21.80, 80.19], [21.80, 80.18]
+     ],
+     village_nam: 'Sanguem', tenant_name: 'Yusuf Khan', plot_id: '03b59', kha_no: '5s22c2', Land_Area: '2.8 acre', Land_type: 'Commercial', Rent_Cess: '₹280', Last_Published_Date: '2024-07-03'
 },
 {
-       // Plot 2: Deori (Near 21.82, 80.21)
-       coords: [
-         [21.83, 80.21], [21.83, 80.22],
-         [21.82, 80.22], [21.82, 80.21]
-       ],
-       village_nam: 'Deori', tenant_name: 'Pooja Singh', plot_id: '1a2b3', kha_no: '1k99d1', Land_Area: '1.5 acre', Land_type: 'Agriculture', Rent_Cess: '₹150', Last_Published_Date: '2024-06-15'
+     // Plot 2: Deori (Near 21.82, 80.21)
+     coords: [
+      [21.83, 80.21], [21.83, 80.22],
+      [21.82, 80.22], [21.82, 80.21]
+     ],
+     village_nam: 'Deori', tenant_name: 'Pooja Singh', plot_id: '1a2b3', kha_no: '1k99d1', Land_Area: '1.5 acre', Land_type: 'Agriculture', Rent_Cess: '₹150', Last_Published_Date: '2024-06-15'
 },
 {
-       // Plot 3: Lalbarra (Near 21.75, 80.20)
-       coords: [
-         [21.76, 80.20], [21.76, 80.21],
-         [21.75, 80.21], [21.75, 80.20]
-       ],
-       village_nam: 'Lalbarra', tenant_name: 'Amit Patel', plot_id: '4c5d6', kha_no: '8t44f3', Land_Area: '5.0 acre', Land_type: 'Residential', Rent_Cess: '₹500', Last_Published_Date: '2024-07-10'
-    },
+     // Plot 3: Lalbarra (Near 21.75, 80.20)
+     coords: [
+      [21.76, 80.20], [21.76, 80.21],
+      [21.75, 80.21], [21.75, 80.20]
+     ],
+     village_nam: 'Lalbarra', tenant_name: 'Amit Patel', plot_id: '4c5d6', kha_no: '8t44f3', Land_Area: '5.0 acre', Land_type: 'Residential', Rent_Cess: '₹500', Last_Published_Date: '2024-07-10'
+ },
 {
-       // Plot 4: Katangi (Near 21.85, 80.25)
-       coords: [
-         [21.86, 80.25], [21.86, 80.26],
-         [21.85, 80.26], [21.85, 80.25]
-       ],
-       village_nam: 'Katangi', tenant_name: 'Sunita Devi', plot_id: '7e8f9', kha_no: '3j11a7', Land_Area: '0.9 acre', Land_type: 'Agriculture', Rent_Cess: '₹90', Last_Published_Date: '2024-05-20'
-    },
-    {
-       // Plot 5: Tirodi (Near 21.70, 80.15)
-       coords: [
-        [21.71, 80.15], [21.71, 80.16],
-         [21.70, 80.16], [21.70, 80.15]
-       ],
-       village_nam: 'Tirodi', tenant_name: 'Rajesh Verma', plot_id: '9g0h1', kha_no: '6m33b4', Land_Area: '3.2 acre', Land_type: 'Industrial', Rent_Cess: '₹320', Last_Published_Date: '2024-07-01'
-    },
+     // Plot 4: Katangi (Near 21.85, 80.25)
+     coords: [
+      [21.86, 80.25], [21.86, 80.26],
+      [21.85, 80.26], [21.85, 80.25]
+     ],
+     village_nam: 'Katangi', tenant_name: 'Sunita Devi', plot_id: '7e8f9', kha_no: '3j11a7', Land_Area: '0.9 acre', Land_type: 'Agriculture', Rent_Cess: '₹90', Last_Published_Date: '2024-05-20'
+ },
+ {
+     // Plot 5: Tirodi (Near 21.70, 80.15)
+     coords: [
+     [21.71, 80.15], [21.71, 80.16],
+      [21.70, 80.16], [21.70, 80.15]
+     ],
+     village_nam: 'Tirodi', tenant_name: 'Rajesh Verma', plot_id: '9g0h1', kha_no: '6m33b4', Land_Area: '3.2 acre', Land_type: 'Industrial', Rent_Cess: '₹320', Last_Published_Date: '2024-07-01'
+ },
 ];
 
 // --- Leaflet Styling ---
@@ -132,26 +136,15 @@ const [show3D, setShow3D] = useState(false);
     const [selectedState, setSelectedState] = useState("Madhya Pradesh");
     const [districts, setDistricts] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState(null);
-    // 1. ADD NEW STATE FOR SIDEBAR VISIBILITY
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
     const mapRef = useRef(null);
     const sidebarRef = useRef(null);
     const sidebarContentRef = useRef(null);
-    // const chartRef = useRef(null); // REMOVED: Chart.js ref
+    const chartRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const geojsonLayerRef = useRef(null);
     const geojsonFeaturesRef = useRef([]);
     const plotLayerRef = useRef(null);
-
-    // 2. DEFINE OPEN/CLOSE UTILITIES
-    const closeSidebar = useCallback(() => {
-        setIsSidebarOpen(false);
-    }, []);
-
-    const openSidebar = useCallback(() => {
-        setIsSidebarOpen(true);
-    }, []);
 
     // --- Utility: Get District Name ---
     const getDistrictName = useCallback((feature, stateName, index = -1) => {
@@ -182,11 +175,10 @@ const [show3D, setShow3D] = useState(false);
 
         sidebarContent.innerHTML = "";
 
-        // REMOVED: Chart destruction logic as chartRef is gone
-        // if (chartRef.current) {
-        //     chartRef.current.destroy();
-        //     chartRef.current = null;
-        // }
+        if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+        }
 
         sidebarContent.innerHTML = `
             <div class="info-entry"><p><b>--- Plot Details ---</b></p></div>
@@ -200,24 +192,23 @@ const [show3D, setShow3D] = useState(false);
             <div class="info-entry"><p><b>Last Update:</b> ${plotData.Last_Published_Date}</p></div>
         `;
 
-        // 3. Open sidebar explicitly
-        openSidebar();
-    }, [openSidebar]);
+        sidebar.classList.add("visible");
+    }, []);
 
 
-    // --- District/State Details Renderer (MODIFIED) ---
-    const renderData = useCallback((name, data) => {
+    // --- District/State Details Renderer (ENHANCED UI) ---
+    const renderDataAndChart = useCallback((name, data) => {
         const sidebar = sidebarRef.current;
         const sidebarContent = sidebarContentRef.current;
         if (!sidebar || !sidebarContent) return;
 
         sidebarContent.innerHTML = "";
 
-        // REMOVED: Chart destruction logic as chartRef is gone
-        // if (chartRef.current) {
-        //     chartRef.current.destroy();
-        //     chartRef.current = null;
-        // }
+        // Destroy existing chart
+        if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+        }
 
         const isDistrictSelected = !!selectedDistrict;
         const primaryName = isDistrictSelected ? selectedDistrict.name : selectedState;
@@ -226,7 +217,7 @@ const [show3D, setShow3D] = useState(false);
             totalAgriculturalArea, forestCoverIndex, homesteadsBuiltUpArea,
             waterBodyCount, miningNonForestUse, waterStressIndex,
             schemeEligibilityRatio, connectivityRoadProximity,
-            // REMOVED: Chart data destructuring
+            totalIFRFiled, totalIFRGranted, totalCFRFiled, totalCFRGranted
         } = data;
 
         // Enhanced Header Section
@@ -361,20 +352,83 @@ const [show3D, setShow3D] = useState(false);
             </div>
         `;
 
-        // REMOVED: Rights Analysis Chart Section
+        // Rights Analysis Chart Section
+        const chartSection = document.createElement('div');
+        chartSection.className = 'chart-section';
+        chartSection.innerHTML = `
+            <h5 class="section-title">📈 Rights Analysis</h5>
+            <div class="chart-container">
+                <canvas id="fraChart" width="300" height="200"></canvas>
+            </div>
+        `;
 
         // Append all sections
         sidebarContent.appendChild(headerSection);
         sidebarContent.appendChild(statsSection);
         sidebarContent.appendChild(environmentSection);
         sidebarContent.appendChild(infrastructureSection);
+        sidebarContent.appendChild(chartSection);
 
-        // 4. Open sidebar explicitly
-        openSidebar();
+        sidebar.classList.add("visible");
 
-        // REMOVED: Chart creation logic
+        // Create enhanced doughnut chart
+        const ctx = document.getElementById('fraChart').getContext('2d');
+        chartRef.current = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ["IFR Granted", "IFR Denied", "CFR Granted", "CFR Denied"],
+                datasets: [{
+                    data: [
+                        totalIFRGranted,
+                        totalIFRFiled - totalIFRGranted,
+                        totalCFRGranted,
+                        totalCFRFiled - totalCFRGranted,
+                    ],
+                    backgroundColor: [
+                        'rgba(76, 175, 80, 0.8)',
+                        'rgba(244, 67, 54, 0.8)',
+                        'rgba(33, 150, 243, 0.8)',
+                        'rgba(255, 235, 59, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(56, 142, 60, 1)',
+                        'rgba(211, 47, 47, 1)',
+                        'rgba(25, 118, 210, 1)',
+                        'rgba(251, 192, 45, 1)'
+                    ],
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (tooltipItem) => {
+                                let label = tooltipItem.label || "";
+                                if (label) label += ": ";
+                                label += tooltipItem.raw;
+                                return label;
+                            },
+                        },
+                    }
+                },
+                cutout: '60%'
+            }
+        });
 
-    }, [selectedDistrict, selectedState, openSidebar]);
+    }, [selectedDistrict, selectedState]);
 
 
     // --- Effect: Update sidebar with State/District Data (UPDATED) ---
@@ -385,14 +439,17 @@ const [show3D, setShow3D] = useState(false);
         const districtStats = generateDistrictAssets(2);
 
         if (!selectedDistrict) {
-            renderData(selectedState, stateStats);
+            renderDataAndChart(selectedState, stateStats);
         }
         else {
-            renderData(selectedDistrict.name, districtStats);
+            renderDataAndChart(selectedDistrict.name, districtStats);
         }
         
-        // Removed redundant class manipulation here, as renderData now calls openSidebar
-    }, [selectedState, selectedDistrict, renderData]);
+        // Ensure sidebar is visible
+        if (sidebarRef.current) {
+            sidebarRef.current.classList.add("visible");
+        }
+    }, [selectedState, selectedDistrict, renderDataAndChart]);
 
 
     // ## The Plot Rendering Effect ##
@@ -490,7 +547,9 @@ useEffect(() => {
     const handleStateChange = (event) => {
         setSelectedState(event.target.value);
         setSelectedDistrict(null);
-        // Let the useEffect logic open the sidebar on data render
+        if (sidebarRef.current) {
+            sidebarRef.current.classList.remove("visible");
+        }
     };
 
     const handleDistrictSelect = (event) => {
@@ -649,12 +708,12 @@ useEffect(() => {
     }, [selectedState, getDistrictName]);
 
 
-    // --- Cleanup for Chart (REMOVED) ---
-    // useEffect(() => {
-    //     return () => {
-    //         if (chartRef.current) chartRef.current.destroy();
-    //     };
-    // }, []);
+    // --- Cleanup for Chart ---
+    useEffect(() => {
+        return () => {
+            if (chartRef.current) chartRef.current.destroy();
+        };
+    }, []);
 
 
     // --- Rendered Component Structure ---
@@ -670,20 +729,19 @@ useEffect(() => {
             <div
                 ref={sidebarRef}
                 id="sidebar"
-                // 5. Use conditional class name based on state
-                className={isSidebarOpen ? "visible" : ""}
+                className="visible"
                 style={{
                     position: "absolute",
                     top: 10,
                     right: 10,
-                    width: "340px",
+                    width: "480px",
                     height: "calc(100% - 20px)",
                     backgroundColor: "white",
                     padding: "24px",
                     boxShadow: "-4px 0 20px rgba(0,0,0,0.15)",
                     zIndex: 1000,
                     overflowY: "auto",
-                    // 6. REMOVE inline transform: "translateX(0%)" to let CSS handle it
+                    transform: "translateX(0%)",
                     transition: "transform 0.3s ease-in-out",
                     borderRadius: "12px 0 0 12px",
                 }}
@@ -707,8 +765,7 @@ useEffect(() => {
                     <span
                         id="sidebar-close"
                         style={{ cursor: "pointer", fontSize: "24px", fontWeight: "bold" }}
-                        // 7. Use the explicit closeSidebar function
-                        onClick={closeSidebar}
+                        onClick={() => sidebarRef.current.classList.remove("visible")}
                     >
                         &times;
                     </span>
@@ -768,17 +825,12 @@ useEffect(() => {
                     <p>Loading data...</p>
                 </div>
             </div>
-            {/* Enhanced CSS styles for modern Asset Map UI (Removed .chart-section styling) */}
+            {/* Enhanced CSS styles for modern Asset Map UI */}
             <style>{`
-                /* 8. Ensure non-visible state is handled by CSS only */
-                #sidebar {
-                    transform: translateX(100%);
-                }
-                
                 #sidebar.visible {
                     transform: translateX(0%);
                 }
-                
+
                 /* Asset Analysis Header Styles */
                 .asset-header {
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1038,6 +1090,19 @@ useEffect(() => {
                     height: 100%;
                     border-radius: 3px;
                     transition: width 0.5s ease;
+                }
+
+                /* Chart Section */
+                .chart-section {
+                    background: white;
+                    border-radius: 12px;
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                    border: 1px solid #e9ecef;
+                }
+
+                .chart-container {
+                    margin-top: 16px;
                 }
             `}</style>
         </div>
