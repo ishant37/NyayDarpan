@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Plot3DView from './plot3dview';
+import Chart from "chart.js/auto";
 
 
 
