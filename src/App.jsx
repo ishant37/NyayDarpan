@@ -7,10 +7,11 @@ import Settings, { SettingsProvider } from "./pages/Settings.jsx";
 import Map from "./pages/Map.jsx";
 import ScanDoc from "./pages/ScanDoc.jsx";
 // Import the new DSS main component
-import DecisionSupportSystem from "./pages/dss/DecisionSupportSystem.jsx"; 
+import DecisionSupportSystem from "./pages/dss/DecisionSupportSystem.jsx";
 import AuthWrapper from './pages/AuthWrapper.jsx';
 import PendingClaims from "./pages/PendingClaims.jsx";
 import ClaimDetail from "./pages/ClaimDetail.jsx";
+import ApplyClaim from "./pages/ApplyClaim.jsx";
 
 function App() {
   return (
@@ -23,11 +24,12 @@ function App() {
               <Route path="atlas" element={<Map />} />
               <Route path="scandoc" element={<ScanDoc />} />
               {/* Updated this route to point to the new DSS */}
-              <Route path="dss" element={<DecisionSupportSystem />} /> 
+              <Route path="dss" element={<DecisionSupportSystem />} />
               <Route path="pattas" element={<PattaList />} />
               <Route path="settings" element={<Settings />} />
               <Route path="pending-claims" element={<PendingClaims />} />
               <Route path="pending-claims/:claimId" element={<ClaimDetail />} />
+              <Route path="apply-claim" element={<ApplyClaim />} />
             </Route>
           </Routes>
         </AuthWrapper>
