@@ -14,11 +14,12 @@ import {
   FileSignature,
   Download,
   ShieldCheck,
+  Link as LinkIcon,
 } from 'lucide-react';
 import FraPattaTemplate from '../components/FraPattaTemplate';
 import { generatePDF, generatePDFFilename } from '../utils/pdfGenerator';
 import { generateQRCode, generateFraId } from '../utils/fraUtils';
-import { Button } from '../components/ui/button'; // Using the consistent button
+import { Button } from '../components/ui/button';
 import EnhancedHeatmapModal from './dss/EnhancedHeatmapModal';
 
 // --- Reusable Components for this page ---
@@ -147,20 +148,41 @@ const ScanDoc = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [qrCodeDataURL, setQrCodeDataURL] = useState('');
-  const [isHeatmapOpen, setIsHeatmapOpen] = useState(false);
+    const [isHeatmapOpen, setIsHeatmapOpen] = useState(false);
+    const [aadharFile, setAadharFile] = useState(null);
+    const [aadharPreview, setAadharPreview] = useState(null);
+    const [bhuAadhaarId, setBhuAadhaarId] = useState(null);
+    const [isLinking, setIsLinking] = useState(false);
 
-  const handleFileDrop = useCallback((acceptedFiles) => {
+  const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0];
       setFile(selectedFile);
       setPreview(URL.createObjectURL(selectedFile));
       setResults(null);
+      setAadharFile(null);
+      setAadharPreview(null);
+      setBhuAadhaarId(null);
     }
   }, []);
   
+  const onAadharDrop = useCallback((acceptedFiles) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+        const selectedFile = acceptedFiles[0];
+        setAadharFile(selectedFile);
+        setAadharPreview(URL.createObjectURL(selectedFile));
+    }
+  }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFileDrop,
+    onDrop,
     accept: { 'image/jpeg': [], 'image/png': [], 'application/pdf': [] },
+    multiple: false,
+  });
+  
+  const { getRootProps: getAadharRootProps, getInputProps: getAadharInputProps, isDragActive: isAadharDragActive } = useDropzone({
+    onDrop: onAadharDrop,
+    accept: { 'image/jpeg': [], 'image/png': [] },
     multiple: false,
   });
 
@@ -173,11 +195,25 @@ const ScanDoc = () => {
     setIsAnalyzing(false);
   };
 
+  const handleLinkAadhar = () => {
+    setIsLinking(true);
+    setTimeout(() => {
+        const uniqueId = `BHU${Date.now()}`;
+        setBhuAadhaarId(uniqueId);
+        setResults(prev => ({...prev, bhuAadhaarId: uniqueId}));
+        setIsLinking(false);
+    }, 1500);
+  };
+
   const handleClear = () => {
     if (preview) URL.revokeObjectURL(preview);
+    if (aadharPreview) URL.revokeObjectURL(aadharPreview);
     setFile(null);
     setPreview(null);
     setResults(null);
+    setAadharFile(null);
+    setAadharPreview(null);
+    setBhuAadhaarId(null);
   };
 
   const handleGeneratePatta = async () => {
@@ -203,22 +239,14 @@ const ScanDoc = () => {
   };
 
   const handleViewInMap = () => {
-    // Create a mock scheme object based on the analysis results
-    const mockScheme = {
-      name: results.documentType || 'वन अधिकार प्रमाण पत्र',
-      district: results.DISTRICT,
-      village: results.VILLAGE,
-      khasra: results.KHASRA_NO
-    };
     setIsHeatmapOpen(true);
   };
 
   return (
     <>
       <div style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -10 }}><div id="fra-patta-template">{results && qrCodeDataURL && <FraPattaTemplate data={results} qrCodeDataURL={qrCodeDataURL} />}</div></div>
-      <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleFileDrop} />
+      <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={onDrop} />
       
-      {/* Enhanced Heatmap Modal */}
       {results && (
         <EnhancedHeatmapModal
           isOpen={isHeatmapOpen}
@@ -326,7 +354,7 @@ const ScanDoc = () => {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     {Object.entries(results).map(([key, value]) => {
-                      if (['id', 'documentType', 'confidenceScore', 'verificationStatus', 'HOLDER_NAME', 'applicantImage'].includes(key)) return null;
+                      if (['id', 'documentType', 'confidenceScore', 'verificationStatus', 'HOLDER_NAME', 'applicantImage', 'bhuAadhaarId'].includes(key)) return null;
                       const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                       return (
                         <div key={key}>
@@ -337,9 +365,36 @@ const ScanDoc = () => {
                     })}
                   </div>
                   
-                  <div className="border-t pt-6 space-y-3">
-                    <Button onClick={handleGeneratePatta} isLoading={isGeneratingPDF} className="w-full"><FileSignature className="mr-2 h-4 w-4" /> Generate Patta PDF</Button>
-                    <Button variant="outline" onClick={handleViewInMap} className="w-full"><Map className="mr-2 h-4 w-4" /> View in Map</Button>
+                  <div className="border-t pt-6">
+                    {!bhuAadhaarId ? (
+                        <div>
+                            <h4 className="font-semibold text-center text-lg mb-2">Step 2: Link Aadhaar</h4>
+                            {!aadharPreview ? (
+                                <div {...getAadharRootProps()} className={`w-full text-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${ isAadharDragActive ? 'border-gray-900 bg-gray-100' : 'border-gray-300 hover:border-gray-400' }`}>
+                                    <input {...getAadharInputProps()} />
+                                    <UploadCloud className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                                    <p className="font-semibold text-gray-700">Upload Aadhar Card</p>
+                                    <p className="text-xs text-gray-500">to generate a unique Bhu-Aadhaar ID</p>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <img src={aadharPreview} alt="Aadhar Preview" className="max-h-32 w-auto mx-auto object-contain mb-2 rounded-lg border" />
+                                </div>
+                            )}
+                             <Button onClick={handleLinkAadhar} isLoading={isLinking} disabled={!aadharFile} className="w-full mt-4"><LinkIcon className="mr-2 h-4 w-4" /> Link & Generate Bhu-Aadhaar</Button>
+                        </div>
+                    ) : (
+                        <div className="text-center">
+                            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                            <h4 className="font-semibold text-lg text-green-700">Bhu-Aadhaar Generated!</h4>
+                            <p className="text-sm text-gray-600">Unique Land ID:</p>
+                            <p className="font-bold text-xl text-gray-800 bg-gray-100 py-2 px-4 rounded-lg my-2 inline-block">{bhuAadhaarId}</p>
+                            <div className="mt-4 space-y-3">
+                                <Button onClick={handleGeneratePatta} isLoading={isGeneratingPDF} className="w-full"><Download className="mr-2 h-4 w-4" /> Download ePatta</Button>
+                                <Button variant="outline" onClick={handleViewInMap} className="w-full"><Map className="mr-2 h-4 w-4" /> Visualize on Map</Button>
+                            </div>
+                        </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -352,4 +407,3 @@ const ScanDoc = () => {
 };
 
 export default ScanDoc;
-

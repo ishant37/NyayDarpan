@@ -9,12 +9,12 @@ import Plot3DView from './plot3dview';
 
 // 💡 UPDATED: Generator for District Asset Data
 const generateDistrictAssets = (factor) => ({
-    totalAgriculturalArea: (Math.random() * 1000 * factor).toFixed(2), // sq km
-    forestCoverIndex: (Math.random() * 0.5 + 0.5).toFixed(2), // 0.5 to 1.0
+    totalAgriculturalArea: 158230, // sq km
+    forestCoverIndex: 27.83*0.01, // 0.5 to 1.0
     homesteadsBuiltUpArea: (Math.random() * 50 * factor).toFixed(2), // sq km
-    waterBodyCount: Math.floor(Math.random() * 50 * factor) + 5,
-    miningNonForestUse: (Math.random() * 10 * factor).toFixed(2), // sq km
-    waterStressIndex: (Math.random() * 10).toFixed(2), // 0 to 10
+    waterBodyCount: 120,
+    miningNonForestUse: 3000, // sq km
+    waterStressIndex: 5.5, // 0 to 10
     schemeEligibilityRatio: (Math.random()).toFixed(2), // 0.0 to 1.0
     connectivityRoadProximity: (Math.random() * 100).toFixed(2), // km
     

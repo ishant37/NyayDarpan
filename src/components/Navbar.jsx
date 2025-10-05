@@ -25,6 +25,7 @@ import {
   Menu,
   Notifications,
   Forest,
+  PlaylistAdd,
 } from "@mui/icons-material";
 
 // Original max width for the expanded state
@@ -57,6 +58,7 @@ const Navbar = () => {
     { path: "/atlas", label: "Atlas", icon: <Map />, color: "#60a5fa" },
     { path: "/scandoc", label: "Scan Document", icon: <DocumentScanner />, color: "#f472b6" },
     { path: "/dss", label: "Decision Support", icon: <Psychology />, color: "#fbbf24" },
+    { path: "/apply-claim", label: "Apply for Claim", icon: <PlaylistAdd />, color: "#c084fc" },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -64,7 +66,7 @@ const Navbar = () => {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
-  
+
   const handleMouseEnter = () => {
     setDrawerWidth(MAX_DRAWER_WIDTH);
   };
@@ -164,9 +166,9 @@ const Navbar = () => {
                 sx={{
                   borderRadius: "12px",
                   py: 1.2,
-                  justifyContent: isMinimized ? 'center' : 'flex-start', 
+                  justifyContent: isMinimized ? 'center' : 'flex-start',
                   // Ensure button takes full width when expanded for border
-                  width: '100%', 
+                  width: '100%',
                   backgroundColor: active ? "rgba(74, 222, 128, 0.1)" : "transparent",
                   borderLeft: active ? `4px solid ${item.color}` : "4px solid transparent",
                   "&:hover": {
@@ -185,7 +187,7 @@ const Navbar = () => {
                 >
                   {item.icon}
                 </ListItemIcon>
-                
+
                 {/* Use ListItemText, but hide the primary text content smoothly with CSS */}
                 <ListItemText
                   primary={item.label}
@@ -223,18 +225,18 @@ const Navbar = () => {
                 component={item.path ? Link : 'div'}
                 to={item.path}
                 onClick={item.onClick}
-                sx={{ 
-                  borderRadius: "12px", 
+                sx={{
+                  borderRadius: "12px",
                   justifyContent: isMinimized ? 'center' : 'flex-start',
                   width: '100%',
-                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.05)" } 
+                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.05)" }
                 }}
               >
                 <ListItemIcon sx={{ color: "#94a3b8", minWidth: MIN_DRAWER_WIDTH - 48 }}>{item.icon}</ListItemIcon>
-                
+
                 {/* Use ListItemText for action items with smooth hide/show */}
-                <ListItemText 
-                    primary={item.label} 
+                <ListItemText
+                    primary={item.label}
                     sx={{
                         opacity: isMinimized ? 0 : 1,
                         width: isMinimized ? 0 : 'auto',
@@ -256,7 +258,7 @@ const Navbar = () => {
           <Avatar sx={{ width: 40, height: 40, bgcolor: "#10b981" }}>
             {loggedInUser.displayName ? loggedInUser.displayName.charAt(0).toUpperCase() : 'U'}
           </Avatar>
-          
+
           {/* Wrap profile text in SmoothText for a consistent layout */}
           <SmoothText>
             <Box>
@@ -309,8 +311,8 @@ const Navbar = () => {
       {/* Sidebar Navigation */}
       <Box
         component="nav"
-        sx={{ 
-          width: { xs: MAX_DRAWER_WIDTH, sm: drawerWidth }, 
+        sx={{
+          width: { xs: MAX_DRAWER_WIDTH, sm: drawerWidth },
           flexShrink: { sm: 0 },
           transition: { sm: 'width 0.3s ease-in-out' },
         }}
@@ -341,12 +343,12 @@ const Navbar = () => {
           variant="permanent"
           sx={{
             display: { xs: "none", sm: "block" },
-            width: drawerWidth, 
+            width: drawerWidth,
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: drawerWidth,
               borderRight: "none",
-              transition: 'width 0.3s ease-in-out', 
+              transition: 'width 0.3s ease-in-out',
               overflowX: 'hidden',
             },
           }}
