@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postinstall": "npm rebuild rollup"
+    "postinstall": "npm rebuild rollup && npm rebuild lightningcss --force"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -60,6 +60,6 @@
     "postcss": "^8.5.6"
   },
   "engines": {
-    "node": "22.x"
+    "node": "18.x"
   }
 }
