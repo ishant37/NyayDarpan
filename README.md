@@ -1,107 +1,132 @@
-# FRA Patta Generator
+-----
 
-A React application for generating PDF documents from JSON data for Forest Rights Act (FRA) Patta certificates.
+# NyayDarpan - Legal Case Management System
 
-## Features
+**NyayDarpan** is a modern, AI-powered legal case and land rights management system. It is built using a high-performance stack including **React**, **Vite**, **Tailwind CSS**, and **Appwrite** for the backend.
 
-- ✅ **Sample Data**: Pre-loaded sample FRA patta data for quick testing
-- ✅ **Custom JSON Input**: Input your own JSON data in the required format
-- ✅ **PDF Generation**: High-quality PDF generation using jsPDF and html2canvas
-- ✅ **QR Code Integration**: Each patta includes a QR code for verification
-- ✅ **Data Validation**: Input validation to ensure all required fields are present
-- ✅ **Responsive Design**: Works on desktop and mobile devices
-- ✅ **Hindi Language Support**: Proper rendering of Devanagari script
+The system is designed to digitize and streamline the entire workflow of managing legal claims, particularly for land rights under the Forest Rights Act (FRA), from application to final "Patta" generation.
 
-## Installation
+-----
 
-1. Navigate to the project directory:
+## 🌟 Key Features
+
+  * **Role-Based Access Control (RBAC):** Secure login system for different user roles, including Claimants, Admin, District Level Committees (DLC), and State Level Monitoring Committees (SLMC).
+  * **Comprehensive Dashboard:** A central hub showing key statistics, claim statuses, pending tasks, and data visualizations.
+  * **Claim Management:** Full lifecycle management for claims, including new claim applications, tracking pending claims, and viewing detailed claim information.
+  * **AI Decision Support System (DSS):** An AI-powered agent that analyzes claim data to provide recommendations, check for inconsistencies, and score claim viability.
+  * **Advanced Geospatial Analysis:** A powerful mapping module with multiple layers for visualizing land data:
+      * **Cadastrial Map:** For viewing official land parcel boundaries.
+      * **Asset Map:** To overlay community assets and infrastructure.
+      * **Topographical Map:** For understanding land elevation and terrain.
+      * **3D Plot View:** A 3D visualization of specific land plots.
+  * **Digital Patta Generation:** Automatically generate and export official FRA Patta (land title) documents as PDFs.
+  * **Document Scanning & OCR:** A utility to scan and digitize physical documents related to a claim.
+  * **Real-time Email Notifications:** Automated email alerts for claim status updates (Submitted, Approved, Rejected) using Appwrite Functions and React Email.
+  * **Dynamic Reporting:** Generate and export reports on claim data.
+
+-----
+
+## 💻 Technology Stack
+
+  * **Frontend:** React 18, Vite, Tailwind CSS
+  * **Backend (BaaS):** Appwrite (Handles Auth, Database, Storage, and Functions)
+  * **Routing:** React Router DOM
+  * **Mapping:** Leaflet, React-Leaflet, @react-google-maps/api
+  * **Charting:** Chart.js, Recharts
+  * **PDF Generation:** jsPDF, html2canvas
+  * **UI/Utils:** Shadcn/ui (components), React Icons, Tailwind Merge, React Hot Toast
+  * **Deployment:** Vercel
+
+-----
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+  * Node.js (v18 or higher)
+  * npm or yarn
+  * An active **Appwrite Cloud** or self-hosted Appwrite instance.
+
+### 1\. Clone the Repository
+
 ```bash
-cd "d:\React\JSON to Pdf\fra-patta-generator"
+git clone https://github.com/ishant37/nyaydarpan.git
+cd nyaydarpan
 ```
 
-2. Install dependencies:
+### 2\. Install Dependencies
+
 ```bash
 npm install
 ```
 
-3. Start the development server:
+### 3\. Environment Setup
+
+Create a `.env` file in the root of the project and add your Appwrite credentials:
+
+```env
+# Appwrite Configuration
+VITE_APPWRITE_URL="https"//your-appwrite-endpoint.com/v1
+VITE_APPWRITE_PROJECT_ID="your-project-id"
+VITE_APPWRITE_DATABASE_ID="your-database-id"
+VITE_APPWRITE_CLAIMS_COLLECTION_ID="your-claims-collection-id"
+VITE_APPWRITE_PROPERTIES_COLLECTION_ID="your-properties-collection-id"
+VITE_APPWRITE_USERS_COLLECTION_ID="your-users-collection-id"
+VITE_APPWRITE_STORAGE_ID="your-storage-bucket-id"
+
+# Appwrite Function IDs (for email notifications)
+VITE_APPWRITE_EMAIL_FUNCTION_ID="your-email-function-id"
+```
+
+### 4\. Run the Development Server
+
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173/`
+The application will be available at `http://localhost:5173` (or another port if 5173 is busy).
 
-## Usage
+-----
 
-### Using Sample Data
-1. Click on the "Sample Data" tab
-2. Select one of the pre-loaded FRA patta records
-3. Preview the generated document
-4. Click "Download PDF" to generate and download the certificate
+## 📁 Project Structure
 
-### Using Custom JSON Data
-1. Click on the "Custom JSON" tab
-2. Paste your JSON data in the required format (see below)
-3. Click "Load JSON Data" to validate and load the data
-4. Preview the generated document
-5. Click "Download PDF" to generate and download the certificate
-
-## JSON Data Format
-
-The application expects JSON data in the following format:
-
-```json
-{
-  "id": "FRA001", // Auto-generated if not provided
-  "GRAM_PANCHAYAT": "खामखेड़ा़",
-  "JANPAD_PANCHAYAT": "आष्टा.",
-  "TEHSIL": "अष्ा",
-  "DISTRICT": "सीहोर",
-  "SERIAL_NO": null, // Optional field
-  "DATE": "28/08/2015", // Format: DD/MM/YYYY
-  "HOLDER_NAME": "मोहन सिह़",
-  "FATHER_NAME": "सोहन सिंह",
-  "KHASRA_NO": "152/1",
-  "TOTAL_AREA_SQFT": "2400",
-  "BOUNDARY_EAST": "मुख्य रड़क",
-  "BOUNDARY_WEST": "रामलाल का खेत",
-  "BOUNDARY_NORTH": "पंचायत भवन",
-  "BOUNDARY_SOUTH": "खाली भूमि"
-}
+```
+/
+├── public/                  # Static assets
+├── src/
+│   ├── assets/              # Images, fonts, etc.
+│   ├── components/          # Reusable components (Navbar, Cards, etc.)
+│   │   ├── cards/
+│   │   ├── reports/
+│   │   └── ui/              # Shadcn UI components
+│   ├── data/                # Mock data, GeoJSON files
+│   ├── lib/                 # Utility libraries (e.g., cn)
+│   ├── pages/               # Top-level page components (routes)
+│   │   ├── dss/             # Decision Support System components
+│   │   └── Maps/            # All map-related page components
+│   ├── utils/               # Helper functions (pdf, auth, etc.)
+│   ├── App.jsx              # Main app component with router setup
+│   ├── main.jsx             # React entry point
+│   └── index.css            # Global styles & Tailwind imports
+│
+├── .gitignore               # Files to ignore in Git
+├── index.html               # Vite HTML entry point
+├── package.json             # Project dependencies
+├── tailwind.config.js       # Tailwind configuration
+├── vite.config.js           # Vite configuration
+└── README.md                # This file
 ```
 
-### Required Fields
-All fields except `SERIAL_NO` are required. The application will validate your input and show errors if any required fields are missing.
+-----
 
-## QR Code Verification
+## 📦 Deployment
 
-Each generated PDF includes a QR code that contains:
-- Patta ID
-- Holder name
-- Father's name
-- Khasra number
-- Date
-- District
-- Verification URL (example: `https://fra-verification.gov.in/verify/{id}`)
+This project is configured for seamless deployment on **Vercel**.
 
-## Technologies Used
+1.  Push your code to a Git repository (GitHub, GitLab, etc.).
+2.  Import the project into your Vercel dashboard.
+3.  Vercel will automatically detect the **Vite** framework.
+4.  **Important:** Add your `.env` variables (from Step 3) to the Vercel project's "Environment Variables" settings.
+5.  Click **Deploy**.
 
-- **React 18** - Frontend framework
-- **Vite** - Build tool and development server
-- **Tailwind CSS** - Styling framework
-- **jsPDF** - PDF generation
-- **html2canvas** - HTML to canvas conversion
-- **qrcode** - QR code generation
-- **uuid** - Unique identifier generation
-
-## Build for Production
-
-To build the application for production:
-
-```bash
-npm run build
-```
-
-The built files will be in the `dist/` directory.
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+For more detailed instructions, see the `VERCEL_DEPLOYMENT_GUIDE.md` file.
